@@ -188,12 +188,21 @@ export function InvoiceDetail() {
           </button>
           
           {invoice.status !== "paid" ? (
-            <button
-              onClick={() => setShowPaymentModal(true)}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/30 transition-all active:scale-95 text-sm"
-            >
-              <CreditCard className="w-4 h-4" /> Record Payment
-            </button>
+            <>
+              <NavLink
+                to={`/pay/${invoice.id}`}
+                target="_blank"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-lg shadow-emerald-500/30 transition-all active:scale-95 text-sm"
+              >
+                <CreditCard className="w-4 h-4" /> Pay Now
+              </NavLink>
+              <button
+                onClick={() => setShowPaymentModal(true)}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white/60 dark:bg-gray-800/60 hover:bg-white dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200/50 dark:border-gray-600 rounded-xl font-medium shadow-sm transition-colors text-sm"
+              >
+                Manual Record
+              </button>
+            </>
           ) : (
             <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl text-sm font-medium">
               <CheckCircle className="w-4 h-4" /> Paid

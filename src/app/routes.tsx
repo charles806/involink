@@ -19,6 +19,7 @@ import Terms from "./pages/Terms";
 import Cookies from "./pages/Cookies";
 import Profile from "./pages/Profile";
 import Onboarding from "./pages/Onboarding";
+import Payment from "./pages/Payment";
 import { useAuth } from "./context/AuthContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -62,6 +63,7 @@ export const router = createBrowserRouter([
   { path: "/privacy", Component: Privacy },
   { path: "/terms", Component: Terms },
   { path: "/cookies", Component: Cookies },
+  { path: "/pay/:id", Component: Payment },
   {
     path: "/app",
     Component: AppLayout,
