@@ -125,11 +125,12 @@ const EmptyState = () => {
   );
 };
 
-const InvoiceRow = ({ invoice, onClick }: { invoice: any; onClick: () => void }) => {
+const InvoiceRow = ({ invoice, onClick, delay = 0 }: { invoice: any; onClick: () => void; delay?: number }) => {
   return (
     <motion.tr
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
+      transition={{ delay }}
       whileHover={{ backgroundColor: "rgba(0,0,0,0.02)" }}
       className="group cursor-pointer border-b border-gray-100 dark:border-gray-800"
       onClick={onClick}
@@ -282,21 +283,16 @@ export function Dashboard() {
               <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                 <AnimatePresence>
                   {invoices.slice(0, 10).map((invoice, i) => (
-                    <motion.div
+                    <InvoiceRow 
                       key={invoice.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      <InvoiceRow 
-                        invoice={invoice} 
-                        onClick={() => navigate(
-                          invoice.status === "draft" 
-                            ? `/app/invoices/edit/${invoice.id}` 
-                            : `/app/invoices/${invoice.id}`
-                        )} 
-                      />
-                    </motion.div>
+                      invoice={invoice} 
+                      delay={i * 0.05}
+                      onClick={() => navigate(
+                        invoice.status === "draft" 
+                          ? `/app/invoices/edit/${invoice.id}` 
+                          : `/app/invoices/${invoice.id}`
+                      )} 
+                    />
                   ))}
                 </AnimatePresence>
               </tbody>

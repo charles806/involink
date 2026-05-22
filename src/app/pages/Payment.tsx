@@ -8,14 +8,17 @@ import { GlassCard } from "../components/GlassCard";
 
 interface InvoiceData {
   id: string;
-  invoiceNumber: string;
-  clientName: string;
-  clientEmail: string;
+  invoice_number: string;
+  clients: {
+    name: string;
+    email: string;
+  };
   subtotal: number;
-  tax: number;
+  vat: number;
   total: number;
   status: string;
-  dueDate: string;
+  due_date: string;
+  already_paid?: boolean;
 }
 
 export default function Payment() {
@@ -37,10 +40,15 @@ export default function Payment() {
 
     const fetchInvoice = async () => {
       try {
-        const data = await api.getInvoice(id);
+        const data = await api.getPublicInvoice(id);
+        if (data.already_paid) {
+           setPaymentStatus("success");
+           setInvoice(data);
+           return;
+        }
         setInvoice(data);
-        if (data.client?.email) {
-          setCustomerEmail(data.client.email);
+        if (data.clients?.email) {
+          setCustomerEmail(data.clients.email);
         }
       } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : "Failed to load invoice";
@@ -93,7 +101,19 @@ export default function Payment() {
   }
 
   if (!invoice) {
-    return <Navigate to="/login" replace />;
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+        <GlassCard className="max-w-md w-full p-8 text-center">
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <XCircle className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Invoice Not Found</h2>
+          <p className="text-gray-600 mb-6">
+            The invoice you are trying to pay could not be found. It may have been deleted or the link is invalid.
+          </p>
+        </GlassCard>
+      </div>
+    );
   }
 
   if (paymentStatus === "success") {
@@ -105,7 +125,7 @@ export default function Payment() {
           </div>
           <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Successful!</h2>
           <p className="text-gray-600 mb-6">
-            Your payment for invoice <span className="font-semibold">{invoice.invoiceNumber}</span> has been processed successfully.
+            Your payment for invoice <span className="font-semibold">{invoice.invoice_number}</span> has been processed successfully.
           </p>
           <div className="bg-gray-50 rounded-lg p-4 mb-6">
             <p className="text-sm text-gray-500">Amount Paid</p>
@@ -147,24 +167,24 @@ export default function Payment() {
           <div className="space-y-4 mb-6">
             <div className="flex justify-between py-3 border-b border-gray-100">
               <span className="text-gray-600">Invoice Number</span>
-              <span className="font-medium text-gray-900">{invoice.invoiceNumber}</span>
+              <span className="font-medium text-gray-900">{invoice.invoice_number}</span>
             </div>
             <div className="flex justify-between py-3 border-b border-gray-100">
               <span className="text-gray-600">Client</span>
-              <span className="font-medium text-gray-900">{invoice.client?.name || "—"}</span>
+              <span className="font-medium text-gray-900">{invoice.clients?.name || "—"}</span>
             </div>
             <div className="flex justify-between py-3 border-b border-gray-100">
               <span className="text-gray-600">Due Date</span>
-              <span className="font-medium text-gray-900">{formatDate(invoice.dueDate)}</span>
+              <span className="font-medium text-gray-900">{formatDate(invoice.due_date)}</span>
             </div>
             <div className="flex justify-between py-3 border-b border-gray-100">
               <span className="text-gray-600">Subtotal</span>
               <span className="font-medium text-gray-900">{formatCurrency(invoice.subtotal || 0)}</span>
             </div>
-            {invoice.tax > 0 && (
+            {invoice.vat > 0 && (
               <div className="flex justify-between py-3 border-b border-gray-100">
-                <span className="text-gray-600">Tax</span>
-                <span className="font-medium text-gray-900">{formatCurrency(invoice.tax)}</span>
+                <span className="text-gray-600">Tax/VAT</span>
+                <span className="font-medium text-gray-900">{formatCurrency(invoice.vat)}</span>
               </div>
             )}
             <div className="flex justify-between py-3">

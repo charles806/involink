@@ -58,7 +58,7 @@ export function PaystackPayment({ invoiceId, amount, email, onSuccess, onClose }
     setIsLoading(true);
 
     try {
-      const { data: paymentData } = await api.initializePayment(invoiceId, email);
+      const paymentData = await api.initializePayment(invoiceId, email);
       
       const paystack = new window.PaystackPop({
         key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "",

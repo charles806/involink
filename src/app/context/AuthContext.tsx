@@ -5,6 +5,11 @@ interface User {
   id: string;
   email: string;
   name: string;
+  business_name?: string;
+  bank_name?: string;
+  account_number?: string;
+  account_name?: string;
+  logo_url?: string;
 }
 
 interface AuthContextType {
@@ -13,6 +18,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
+  updateUser: (user: Partial<User>) => void;
   logout: () => void;
 }
 
@@ -56,13 +62,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(newUser);
   };
 
+  const updateUser = (updatedFields: Partial<User>) => {
+    if (user) {
+      const newUser = { ...user, ...updatedFields };
+      setUser(newUser);
+      api.setUser(newUser);
+    }
+  };
+
   const logout = () => {
     api.logout();
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, signup, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, signup, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

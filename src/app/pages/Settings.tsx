@@ -27,24 +27,42 @@ export function Settings() {
   ]);
 
   useEffect(() => {
-    const user = api.getUser();
-    const rawParams = localStorage.getItem("involink_user_settings");
-    
-    let hydratedSettings = { businessName: user?.name?.split('@')[0] || "" };
-    if (rawParams) {
+    const loadSettings = async () => {
       try {
-        const parsed = JSON.parse(rawParams);
-        hydratedSettings = { ...hydratedSettings, ...parsed };
-        setSettings(hydratedSettings);
+        const { user } = await api.getMe();
         
-        if (parsed.taxRates) {
-          setTaxRates(parsed.taxRates);
+        let hydratedSettings: any = { 
+          businessName: user?.business_name || user?.name?.split('@')[0] || "",
+          bankName: user?.bank_name || "",
+          accountNumber: user?.account_number || "",
+          accountName: user?.account_name || ""
+        };
+
+        const rawParams = localStorage.getItem("involink_user_settings");
+        if (rawParams) {
+          const parsed = JSON.parse(rawParams);
+          // Combine local (phone, address) with backend (bank, business name)
+          hydratedSettings = { ...parsed, ...hydratedSettings };
+          if (parsed.taxRates) setTaxRates(parsed.taxRates);
         }
-      } catch(e) {}
-    }
+        setSettings(hydratedSettings);
+      } catch (err) {
+        // Fallback to local storage
+        const rawParams = localStorage.getItem("involink_user_settings");
+        if (rawParams) {
+          try {
+            const parsed = JSON.parse(rawParams);
+            setSettings(parsed);
+            if (parsed.taxRates) setTaxRates(parsed.taxRates);
+          } catch(e) {}
+        }
+      }
+    };
+    
+    loadSettings();
   }, []);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const rawParams = localStorage.getItem("involink_user_settings") || "{}";
     try {
       const parsed = JSON.parse(rawParams);
@@ -53,8 +71,19 @@ export function Settings() {
         ...settings,
         taxRates 
       }));
-    } catch(e) {}
-    toast.success("Settings saved successfully");
+
+      await api.updateProfile({
+        business_name: settings.businessName,
+        bank_name: settings.bankName,
+        account_number: settings.accountNumber,
+        account_name: settings.accountName
+      });
+
+      toast.success("Settings saved successfully");
+    } catch(e) {
+      console.error(e);
+      toast.error("Failed to sync settings with server");
+    }
   };
 
   const addTaxRate = () => {

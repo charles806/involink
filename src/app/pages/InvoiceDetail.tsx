@@ -370,11 +370,11 @@ export function InvoiceDetail() {
           <GlassCard className="p-6">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-4 font-['Poppins']">Payment Link</h3>
             <div 
-              onClick={() => { navigator.clipboard.writeText(`pay.involink.com/${invoice.id}`); toast.success("Payment link copied!"); }}
+              onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/pay/${invoice.id}`); toast.success("Payment link copied!"); }}
               className="bg-gray-50 dark:bg-gray-900 rounded-xl p-4 border border-gray-200/50 dark:border-gray-700/50 cursor-pointer group"
             >
               <div className="flex items-center justify-between gap-4">
-                <span className="text-sm font-medium text-gray-600 dark:text-gray-300 truncate">pay.involink.com/{invoice.id?.slice(0, 8)}</span>
+                <span className="text-sm font-medium text-gray-600 dark:text-gray-300 truncate">{window.location.host}/pay/{invoice.id?.slice(0, 8)}</span>
                 <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-emerald-500 transition-colors shrink-0" />
               </div>
             </div>
