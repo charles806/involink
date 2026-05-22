@@ -231,6 +231,9 @@ export function InvoiceCreation() {
       return savedInvoice;
     } catch (err: any) {
       toast.error(err.message || "Failed to save invoice");
+      if (err.message && err.message.includes("Free plan limit reached")) {
+        navigate('/pricing');
+      }
       return null;
     } finally {
       setIsLoading(false);

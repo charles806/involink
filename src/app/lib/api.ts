@@ -294,6 +294,19 @@ class ApiService {
     });
   }
 
+  async subscribeToPlan(plan: 'monthly' | 'yearly', email: string) {
+    return this.request('/payments/subscribe', {
+      method: 'POST',
+      body: JSON.stringify({ plan, email }),
+    });
+  }
+
+  async verifySubscription(reference: string) {
+    return this.request(`/payments/verify-subscription/${encodeURIComponent(reference)}`, {
+      method: 'GET',
+    });
+  }
+
   logout() {
     this.setToken(null);
     localStorage.removeItem('user');

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, useInView } from "framer-motion";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { Zap, Check, ArrowRight } from "lucide-react";
 
 const PricingCard = ({ 
@@ -16,7 +16,9 @@ const PricingCard = ({
   description: string, 
   features: string[], 
   highlighted?: boolean,
-  delay?: number
+  delay?: number,
+  onChoosePlan?: () => void,
+  isLoading?: boolean
 }) => {
   return (
     <motion.div
@@ -69,19 +71,58 @@ const PricingCard = ({
         ))}
       </ul>
       
-      <button className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 cursor-pointer ${
+      <button 
+        onClick={onChoosePlan}
+        disabled={isLoading}
+        className={`w-full py-4 rounded-2xl font-semibold transition-all duration-300 ${isLoading ? 'opacity-70 cursor-not-allowed' : 'cursor-pointer'} ${
         highlighted 
           ? 'bg-white text-emerald-600 hover:bg-white/90 hover:shadow-lg' 
           : 'bg-emerald-500 text-white hover:bg-emerald-600 hover:shadow-lg hover:shadow-emerald-500/30'
       }`}>
-        {name === "Free MVP" ? "Get Started Free" : "Choose Plan"}
+        {isLoading ? "Processing..." : (name === "Free MVP" ? "Get Started Free" : "Choose Plan")}
       </button>
     </motion.div>
   );
 };
 
+import { useAuth } from "../context/AuthContext";
+import api from "../lib/api";
+
 export default function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { user, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  const handleChoosePlan = async (planName: string) => {
+    if (planName === "Free MVP") {
+      navigate('/signup');
+      return;
+    }
+
+    if (!isAuthenticated || !user) {
+      navigate('/login?redirect=/pricing');
+      return;
+    }
+
+    if (user.subscription_plan === 'enterprise') {
+      alert("You are already on the Enterprise plan!");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const planType = isYearly ? 'yearly' : 'monthly';
+      const res = await api.subscribeToPlan(planType, user.email);
+      if (res.authorization_url) {
+        window.location.href = res.authorization_url;
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to initialize payment');
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   const plans = [
     {
@@ -212,6 +253,8 @@ export default function Pricing() {
                 key={i}
                 {...plan}
                 delay={i * 0.15}
+                isLoading={isLoading && plan.name === "Enterprise"}
+                onChoosePlan={() => handleChoosePlan(plan.name)}
               />
             ))}
           </div>

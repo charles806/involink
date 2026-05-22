@@ -10,6 +10,9 @@ interface User {
   account_number?: string;
   account_name?: string;
   logo_url?: string;
+  subscription_plan?: 'free' | 'enterprise';
+  subscription_status?: 'active' | 'past_due' | 'canceled';
+  subscription_expires_at?: string | null;
 }
 
 interface AuthContextType {

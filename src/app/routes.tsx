@@ -22,6 +22,7 @@ import Cookies from "./pages/Cookies";
 import Profile from "./pages/Profile";
 import Onboarding from "./pages/Onboarding";
 import Payment from "./pages/Payment";
+import VerifySubscription from "./pages/VerifySubscription";
 import { useAuth } from "./context/AuthContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -68,6 +69,7 @@ export const router = createBrowserRouter([
   { path: "/terms", Component: Terms },
   { path: "/cookies", Component: Cookies },
   { path: "/pay/:id", Component: Payment },
+  { path: "/verify-subscription", Component: VerifySubscription },
   {
     path: "/app",
     Component: AppLayout,
