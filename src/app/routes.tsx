@@ -8,6 +8,8 @@ import { Settings } from "./pages/Settings";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import Resources from "./pages/Resources";
@@ -53,6 +55,8 @@ export const router = createBrowserRouter([
   { path: "/", Component: LandingPage },
   { path: "/login", Component: Login },
   { path: "/signup", Component: Signup },
+  { path: "/forgot-password", Component: ForgotPassword },
+  { path: "/reset-password", Component: ResetPassword },
   { path: "/onboarding", Component: Onboarding },
   { path: "/about", Component: About },
   { path: "/blog", Component: Blog },

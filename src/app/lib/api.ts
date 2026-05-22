@@ -175,6 +175,26 @@ class ApiService {
     return this.request('/auth/me');
   }
 
+  async forgotPassword(email: string) {
+    if (!validateEmail(email)) {
+      throw new Error('Invalid email format');
+    }
+    return this.request('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    if (!validatePassword(newPassword)) {
+      throw new Error('Password must be at least 8 characters');
+    }
+    return this.request('/auth/reset-password', {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword }),
+    });
+  }
+
   async updateProfile(data: Record<string, unknown>) {
     return this.request('/auth/profile', {
       method: 'PUT',
