@@ -1,996 +1,986 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   motion,
-  useScroll,
-  useTransform,
-  useInView,
-  useMotionValue,
-  useSpring,
+  AnimatePresence,
+  useReducedMotion,
 } from "framer-motion";
 import {
   ArrowRight,
   Check,
-  FileText,
-  Send,
-  Wallet,
-  TrendingUp,
   Menu,
   X,
   MapPin,
-  MousePointer2,
-  Zap,
-  Calculator,
-  Users,
-  Building2,
-  CreditCard,
-  Download,
+  FileText,
+  Send,
+  Wallet,
   BarChart3,
+  ShieldCheck,
+  Zap,
+  CreditCard,
+  Building2,
 } from "lucide-react";
 import { Link } from "react-router";
 import { Logo } from "../components/Logo";
 
-const Navbar = () => {
+const EASE = [0.22, 1, 0.36, 1] as const;
+
+/* ------------------------------------------------------------------ */
+/* Navbar                                                              */
+/* ------------------------------------------------------------------ */
+
+const NAV_LINKS = [
+  { label: "Features", href: "#features" },
+  { label: "Pricing", href: "#pricing" },
+  { label: "Contact", href: "#contact" },
+];
+
+function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const navLinks = [
-    { label: "Features", href: "#features" },
-    { label: "Pricing", href: "#pricing" },
-    { label: "Contact", href: "#contact" },
-  ];
-
   return (
-    <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
+    <header
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         scrolled
-          ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-b border-gray-100 dark:border-gray-800 shadow-sm"
-          : "bg-transparent"
+          ? "border-b border-emerald-900/10 bg-background/85 backdrop-blur-xl shadow-e1"
+          : "border-b border-transparent bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
-          <Link to="/">
-            <Logo />
-          </Link>
+      <nav className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
+        <Link to="/" aria-label="Involink home">
+          <Logo />
+        </Link>
 
-          <div className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.label}
-                href={link.href}
-                className="text-gray-600 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors text-sm font-medium"
-              >
-                {link.label}
-              </a>
-            ))}
-          </div>
-
-          <div className="hidden md:flex items-center gap-3">
-            <Link
-              to="/login"
-              className="px-5 py-2.5 rounded-xl font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm"
+        <div className="hidden items-center gap-8 md:flex">
+          {NAV_LINKS.map((link) => (
+            <a
+              key={link.label}
+              href={link.href}
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
-              Log In
-            </Link>
-            <Link
-              to="/signup"
-              className="px-5 py-2.5 rounded-xl font-medium bg-emerald-500 text-white hover:bg-emerald-600 transition-colors text-sm"
-            >
-              Start Free
-            </Link>
-          </div>
-
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden w-10 h-10 flex items-center justify-center"
-          >
-            {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+              {link.label}
+            </a>
+          ))}
         </div>
 
+        <div className="hidden items-center gap-3 md:flex">
+          <Link
+            to="/login"
+            className="px-4 py-2 text-sm font-medium text-foreground transition-colors hover:text-emerald-600"
+          >
+            Log In
+          </Link>
+          <Link
+            to="/signup"
+            className="rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-e1 transition-all hover:bg-emerald-700 hover:shadow-e2 active:scale-[0.98]"
+          >
+            Start Free
+          </Link>
+        </div>
+
+        <button
+          onClick={() => setIsOpen((v) => !v)}
+          className="grid h-10 w-10 place-items-center rounded-lg text-foreground md:hidden"
+          aria-label="Toggle menu"
+        >
+          {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </nav>
+
+      <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
-            className="md:hidden mt-4 p-4 rounded-2xl bg-white dark:bg-gray-800 shadow-lg"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="mx-4 mb-4 rounded-2xl border border-emerald-900/10 bg-card p-4 shadow-e2 md:hidden"
           >
-            <div className="space-y-3">
-              {navLinks.map((link) => (
+            <div className="flex flex-col gap-1">
+              {NAV_LINKS.map((link) => (
                 <a
                   key={link.label}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className="block py-2 text-gray-700 dark:text-gray-200"
+                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-foreground"
                 >
                   {link.label}
                 </a>
               ))}
+              <div className="my-2 h-px paper-rule" />
               <Link
                 to="/login"
-                className="block py-2 text-gray-700 dark:text-gray-200 font-medium"
+                className="rounded-lg px-3 py-2.5 text-sm font-medium text-foreground"
               >
                 Log In
               </Link>
               <Link
                 to="/signup"
-                className="block py-3 text-center rounded-xl font-medium bg-emerald-500 text-white"
+                className="mt-1 rounded-lg bg-emerald-600 px-3 py-3 text-center text-sm font-semibold text-white"
               >
                 Start Free
               </Link>
             </div>
           </motion.div>
         )}
-      </div>
-    </nav>
+      </AnimatePresence>
+    </header>
   );
-};
+}
 
-const TiltCard = ({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [transform, setTransform] = useState("rotateX(0deg) rotateY(0deg)");
+/* ------------------------------------------------------------------ */
+/* The signature: an invoice as a counterfoil ledger slip              */
+/* ------------------------------------------------------------------ */
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    const rotateX = ((y - centerY) / centerY) * -10;
-    const rotateY = ((x - centerX) / centerX) * 10;
-    setTransform(`rotateX(${rotateX}deg) rotateY(${rotateY}deg)`);
-  };
+function LedgerSlip() {
+  const reduce = useReducedMotion();
 
-  const handleMouseLeave = () => {
-    setTransform("rotateX(0deg) rotateY(0deg)");
-  };
+  const items = [
+    { label: "Website design", qty: "1 pcs", amount: "150,000" },
+    { label: "Development", qty: "1 pcs", amount: "200,000" },
+    { label: "Consultation", qty: "2 hrs", amount: "50,000" },
+  ];
+
+  const [isPaid, setIsPaid] = useState(false);
 
   return (
-    <motion.div
-      ref={ref}
-      className={className}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ transformStyle: "preserve-3d" }}
-      animate={{ transform }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const AnimatedCounter = ({
-  end,
-  suffix = "",
-}: {
-  end: number;
-  suffix?: string;
-}) => {
-  const [count, setCount] = useState(0);
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-
-  useEffect(() => {
-    if (!isInView) return;
-
-    let start = 0;
-    const duration = 2000;
-    const increment = end / (duration / 16);
-
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= end) {
-        setCount(end);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(start));
-      }
-    }, 16);
-
-    return () => clearInterval(timer);
-  }, [isInView, end]);
-
-  return (
-    <span ref={ref}>
-      {count.toLocaleString()}
-      {suffix}
-    </span>
-  );
-};
-
-const ScrollReveal = ({
-  children,
-  delay = 0,
-}: {
-  children: React.ReactNode;
-  delay?: number;
-}) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 50 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.6, delay, ease: "easeOut" }}
-    >
-      {children}
-    </motion.div>
-  );
-};
-
-const HeroSection = () => {
-  const ref = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-  const y = useTransform(scrollYProgress, [0, 1], [0, 150]);
-  const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.5], [1, 0.8]);
-
-  return (
-    <section
-      ref={ref}
-      className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden min-h-screen flex items-center"
-    >
-      <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/80 via-white to-white dark:from-emerald-950/20 dark:via-gray-900 dark:to-gray-900" />
-
-      <motion.div className="absolute inset-0" style={{ y }}>
-        <div className="absolute top-1/4 -left-40 w-80 h-80 bg-emerald-400/20 blur-[100px] rounded-full" />
-        <div className="absolute bottom-1/4 -right-40 w-96 h-96 bg-blue-400/20 blur-[100px] rounded-full" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-300/10 blur-[120px] rounded-full" />
-      </motion.div>
-
-      <div className="relative max-w-7xl mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.5, delay: 0.2, type: "spring" }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-medium mb-6"
-            >
-              <Zap className="w-4 h-4 animate-pulse" />
-              <span>Launch Special: Free Forever Plan</span>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight mb-6"
-            >
-              Create invoices.{" "}
-              <span className="text-emerald-600">Get paid.</span>
-              <br />
-              <span className="text-gray-900">Simple.</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="text-xl text-gray-600 dark:text-gray-300 mb-8 max-w-lg"
-            >
-              Send professional invoices in Naira, track payments in real-time,
-              and get paid faster. No complex apps, no foreign integrations.
-            </motion.p>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="flex flex-wrap gap-4 mb-10"
-            >
-              <Link
-                to="/signup"
-                className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-semibold transition-all hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/30"
-              >
-                Create Free Account
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <Link
-                to="/app"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-200 dark:hover:bg-gray-700 transition-all hover:scale-105"
-              >
-                See Demo
-                <MousePointer2 className="w-4 h-4" />
-              </Link>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.5 }}
-              className="flex items-center gap-6 text-sm text-gray-500"
-            >
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-500" />
-                <span>No credit card</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="w-4 h-4 text-emerald-500" />
-                <span>2-min setup</span>
-              </div>
-            </motion.div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
-            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-            transition={{ duration: 0.8, delay: 0.3, type: "spring" }}
-            className="hidden lg:block perspective-1000"
-          >
-            <TiltCard className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/30 to-blue-500/30 blur-3xl rounded-full" />
-              <div
-                className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 border border-gray-100 dark:border-gray-700 transform transition-transform"
-                style={{ transformStyle: "preserve-3d" }}
-              >
-                <motion.div
-                  className="absolute top-4 right-4 w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center"
-                  animate={{ rotate: [0, 10, 0] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                >
-                  <FileText className="w-8 h-8 text-white" />
-                </motion.div>
-
-                <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100 dark:border-gray-700">
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide">
-                      Invoice
-                    </p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                      INV-0001
-                    </p>
-                  </div>
-                  <div className="px-4 py-2 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-sm font-bold">
-                    DRAFT
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-8">
-                  <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                        <Building2 className="w-5 h-5 text-blue-600" />
-                      </div>
-                      <span className="font-medium">Website Design</span>
-                    </div>
-                    <span className="font-semibold">₦150,000</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                        <Calculator className="w-5 h-5 text-purple-600" />
-                      </div>
-                      <span className="font-medium">Development</span>
-                    </div>
-                    <span className="font-semibold">₦200,000</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-700/50">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                        <Zap className="w-5 h-5 text-amber-600" />
-                      </div>
-                      <span className="font-medium">Consultation</span>
-                    </div>
-                    <span className="font-semibold">₦50,000</span>
-                  </div>
-                </div>
-
-                <div className="flex justify-between pt-4 border-t-2 border-emerald-500">
-                  <span className="font-bold text-lg text-gray-900 dark:text-white">
-                    Total
-                  </span>
-                  <span className="font-bold text-2xl text-emerald-600">
-                    ₦400,000
-                  </span>
-                </div>
-
-                <div className="mt-6 flex items-center justify-center gap-2 text-xs text-gray-400">
-                  <CreditCard className="w-4 h-4" />
-                  <span>Powered by Involink</span>
-                </div>
-              </div>
-            </TiltCard>
-          </motion.div>
-        </div>
-      </div>
+    <div className="relative select-none">
+      {/* soft desk shadow */}
+      <div className="absolute -inset-6 rounded-[40px] bg-emerald-600/10 blur-3xl" />
 
       <motion.div
-        animate={{ y: [0, 10, 0] }}
-        transition={{ duration: 2, repeat: Infinity }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        initial={{ opacity: 0, y: 32, rotate: 2 }}
+        animate={{ opacity: 1, y: 0, rotate: 0 }}
+        transition={{ duration: 0.9, ease: EASE, delay: 0.25 }}
+        className="relative"
       >
-        <div className="w-6 h-10 rounded-full border-2 border-gray-300 dark:border-gray-600 flex items-start justify-center p-2">
+        {/* slip */}
+        <div className="relative overflow-hidden rounded-xl bg-paper shadow-e3">
+          {/* giant naira watermark */}
+          <span
+            aria-hidden
+            className="pointer-events-none absolute -right-8 -top-10 font-display text-[180px] font-bold leading-none text-emerald-600/6"
+          >
+            ₦
+          </span>
+
+          {/* counterfoil side */}
+          <div className="flex">
+            <div className="paper-line flex w-7 shrink-0 flex-col items-center justify-between border-r border-dashed bg-paper-muted px-1 py-4">
+              <span className="font-ledger text-[9px] uppercase tracking-widest text-muted-foreground">
+                Inv
+              </span>
+              <span className="h-full w-px bg-paper-line" />
+              <span className="font-ledger text-[9px] uppercase tracking-widest text-muted-foreground">
+                Copy
+              </span>
+            </div>
+
+            <div className="flex-1 p-6 sm:p-7">
+              {/* header */}
+              <div className="mb-6 flex items-start justify-between">
+                <div>
+                  <p className="font-ledger text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                    Invoice
+                  </p>
+                  <p className="font-display text-lg font-semibold tracking-tight text-foreground">
+                    INV-0042
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 rounded-full border border-emerald-600/25 bg-emerald-600/10 px-3 py-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                  <span className="font-ledger text-[10px] font-semibold uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+                    {isPaid ? "Paid" : "Sent"}
+                  </span>
+                </div>
+              </div>
+
+              {/* bill to */}
+              <div className="mb-6">
+                <p className="font-ledger text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  Bill to
+                </p>
+                <p className="text-sm font-semibold text-foreground">
+                  Chukwudi's Kitchen
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Ikeja, Lagos
+                </p>
+              </div>
+
+              {/* items */}
+              <div className="paper-line border-t border-b">
+                {items.map((item, i) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center justify-between py-2.5 [&:not(:last-child)]:border-b [&:not(:last-child)]:border-paper-line"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-foreground">
+                        {item.label}
+                      </p>
+                      <p className="font-ledger text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {item.qty}
+                      </p>
+                    </div>
+                    <p className="font-ledger text-sm text-foreground">
+                      ₦{item.amount}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              {/* totals */}
+              <div className="mt-4 space-y-1.5">
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Subtotal</span>
+                  <span className="font-ledger">₦400,000</span>
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>VAT (7.5%)</span>
+                  <span className="font-ledger">₦30,000</span>
+                </div>
+                <div className="mt-2 flex items-center justify-between border-t-2 border-foreground pt-3">
+                  <span className="font-display text-sm font-semibold">
+                    Total due
+                  </span>
+                  <span className="font-ledger text-xl font-semibold tracking-tight text-emerald-700 dark:text-emerald-400">
+                    ₦430,000
+                  </span>
+                </div>
+              </div>
+
+              {/* stamp */}
+              <AnimatePresence>
+                {isPaid && (
+                  <motion.div
+                    initial={{ scale: reduce ? 1 : 1.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 500,
+                      damping: 22,
+                    }}
+                    className="pointer-events-none absolute bottom-10 right-8"
+                  >
+                    <div className="-rotate-12 rounded-lg border-[3px] border-emerald-600/70 px-4 py-1.5 font-display text-xl font-bold uppercase tracking-[0.25em] text-emerald-600/80">
+                      Paid
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+
+        {/* manual payment receipt chip */}
+        <motion.button
+          onClick={() => setIsPaid((v) => !v)}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1, duration: 0.5, ease: EASE }}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.97 }}
+          className="absolute -bottom-5 left-8 flex items-center gap-2 rounded-lg border border-emerald-900/10 bg-card px-3.5 py-2 text-xs font-medium text-foreground shadow-e2 transition-colors hover:border-emerald-600/40"
+        >
+          <ShieldCheck className="h-4 w-4 text-emerald-600" />
+          Payment of ₦430,000 received
+        </motion.button>
+
+        {/* whatsapp chip */}
+        <motion.div
+          initial={{ opacity: 0, x: 12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1.2, duration: 0.5, ease: EASE }}
+          className="absolute -right-3 -top-4 flex items-center gap-2 rounded-lg border border-emerald-900/10 bg-card px-3 py-2 text-xs font-medium text-foreground shadow-e2"
+        >
+          <Send className="h-4 w-4 text-emerald-600" />
+          Shared on WhatsApp
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Hero                                                                */
+/* ------------------------------------------------------------------ */
+
+function Hero() {
+  const ref = useRef<HTMLElement>(null);
+
+  return (
+    <section ref={ref} className="relative overflow-hidden">
+      {/* backdrop */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-600/[0.07] via-transparent to-transparent" />
+        <div className="absolute -top-32 right-[-10%] h-96 w-96 rounded-full bg-emerald-500/15 blur-[120px]" />
+        <div className="absolute bottom-[-20%] left-[-8%] h-96 w-96 rounded-full bg-blue-500/10 blur-[120px]" />
+      </div>
+
+      <div className="mx-auto grid max-w-6xl items-center gap-16 px-5 pb-24 pt-32 sm:px-8 lg:grid-cols-[1.05fr_1fr] lg:pb-32 lg:pt-40">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: EASE }}
+        >
+          <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-emerald-600/20 bg-emerald-600/10 px-3.5 py-1.5 font-ledger text-[11px] font-medium uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+            <Zap className="h-3.5 w-3.5" />
+            Built for Nigerian businesses
+          </p>
+
+          <h1 className="text-balance text-4xl font-semibold leading-[1.08] tracking-tight sm:text-5xl lg:text-[3.4rem]">
+            Create professional invoices{" "}
+            <span className="text-emerald-600 dark:text-emerald-400">
+              in seconds
+            </span>
+          </h1>
+
+          <p className="mt-6 max-w-lg text-lg leading-relaxed text-muted-foreground">
+            Invoice clients in Naira, send payment links that work, and watch
+            what's paid, pending, and overdue — without chasing anyone.
+          </p>
+
+          <div className="mt-9 flex flex-wrap items-center gap-4">
+            <Link
+              to="/signup"
+              className="group inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-7 py-3.5 font-semibold text-white shadow-e2 transition-all hover:bg-emerald-700 hover:shadow-e3 active:scale-[0.98]"
+            >
+              Get Started Free
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              to="/app"
+              className="rounded-xl border border-emerald-900/15 bg-card px-7 py-3.5 font-semibold text-foreground transition-all hover:border-emerald-600/40 hover:shadow-e1 active:scale-[0.98]"
+            >
+              See Demo
+            </Link>
+          </div>
+
+          <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <span className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-emerald-600" /> No credit card
+            </span>
+            <span className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-emerald-600" /> 2-minute setup
+            </span>
+            <span className="flex items-center gap-2">
+              <Check className="h-4 w-4 text-emerald-600" /> ₦ Naira native
+            </span>
+          </div>
+        </motion.div>
+
+        <div className="mx-auto w-full max-w-md lg:max-w-none">
+          <LedgerSlip />
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Ledger stats band                                                   */
+/* ------------------------------------------------------------------ */
+
+const STATS = [
+  { value: "60s", label: "to first invoice" },
+  { value: "5", label: "free invoices a month" },
+  { value: "7.5%", label: "VAT built in" },
+  { value: "₦0", label: "to start" },
+];
+
+function LedgerStats() {
+  return (
+    <section className="border-y border-emerald-900/10 bg-card/60">
+      <div className="mx-auto grid max-w-6xl grid-cols-2 divide-x divide-emerald-900/10 px-5 sm:px-8 lg:grid-cols-4">
+        {STATS.map((stat, i) => (
           <motion.div
-            animate={{ y: [0, 12, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="w-1 h-2 rounded-full bg-emerald-500"
-          />
+            key={stat.label}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ delay: i * 0.08, duration: 0.6, ease: EASE }}
+            className="flex flex-col gap-1 px-4 py-8 text-center sm:py-10"
+          >
+            <span className="font-ledger text-3xl font-semibold tracking-tight text-emerald-700 dark:text-emerald-400">
+              {stat.value}
+            </span>
+            <span className="text-xs uppercase tracking-[0.15em] text-muted-foreground">
+              {stat.label}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Features                                                            */
+/* ------------------------------------------------------------------ */
+
+const FEATURES = [
+  {
+    icon: FileText,
+    title: "Invoice creation",
+    description: "Numbered, branded invoices with line items, units, discounts and VAT — in under a minute.",
+    points: ["Custom invoice numbers", "Line items + discounts", "VAT / tax support", "Your branding"],
+  },
+  {
+    icon: Send,
+    title: "Send & share",
+    description: "Email, WhatsApp or a plain payment link. Your client opens it and pays from their phone.",
+    points: ["Email delivery", "WhatsApp sharing", "Payment links", "PDF export"],
+  },
+  {
+    icon: Wallet,
+    title: "Track payments",
+    description: "Status updates in real time — paid, pending, overdue — with reminders that actually go out.",
+    points: ["Real-time status", "Payment reminders", "Auto-receipts", "Bank transfer tracking"],
+  },
+  {
+    icon: BarChart3,
+    title: "Business insights",
+    description: "Know your outstanding totals and client history without any spreadsheet gymnastics.",
+    points: ["Revenue reports", "Outstanding totals", "Client history", "Export to Excel"],
+  },
+];
+
+function Features() {
+  return (
+    <section id="features" className="py-24 sm:py-28">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="mb-14 max-w-2xl"
+        >
+          <p className="mb-3 font-ledger text-xs uppercase tracking-[0.25em] text-emerald-600">
+            Features
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Everything you need to get paid
+          </h2>
+          <p className="mt-4 text-lg text-muted-foreground">
+            Powerful on purpose, simple by design — built for how Nigerian
+            businesses actually invoice.
+          </p>
+        </motion.div>
+
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+          {FEATURES.map((f, i) => (
+            <motion.div
+              key={f.title}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ delay: i * 0.08, duration: 0.6, ease: EASE }}
+              whileHover={{ y: -4 }}
+              className="group rounded-2xl border border-emerald-900/10 bg-card p-6 shadow-e1 transition-shadow hover:shadow-e2"
+            >
+              <div className="mb-5 grid h-11 w-11 place-items-center rounded-xl bg-emerald-600/10 text-emerald-700 transition-colors group-hover:bg-emerald-600 group-hover:text-white dark:text-emerald-400">
+                <f.icon className="h-5 w-5" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold tracking-tight">
+                {f.title}
+              </h3>
+              <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
+                {f.description}
+              </p>
+              <ul className="space-y-2 border-t border-emerald-900/10 pt-4">
+                {f.points.map((p) => (
+                  <li
+                    key={p}
+                    className="flex items-center gap-2 text-sm text-muted-foreground"
+                  >
+                    <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                    {p}
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* How it works — a real sequence, so numbering is earned              */
+/* ------------------------------------------------------------------ */
+
+const STEPS = [
+  {
+    title: "Sign up",
+    desc: "Create your account in two minutes. No card, no calls, no waiting.",
+  },
+  {
+    title: "Add client",
+    desc: "Name, email, phone — the details you already have on your phone.",
+  },
+  {
+    title: "Create invoice",
+    desc: "Add items and set prices. VAT and totals calculate themselves.",
+  },
+  {
+    title: "Get paid",
+    desc: "Share the link, track the status, and know the day money lands.",
+  },
+];
+
+function HowItWorks() {
+  return (
+    <section className="bg-emerald-950 py-24 text-emerald-50 sm:py-28">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="mb-14 max-w-2xl"
+        >
+          <p className="mb-3 font-ledger text-xs uppercase tracking-[0.25em] text-emerald-400">
+            How it works
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            From sign-up to paid in four steps
+          </h2>
+        </motion.div>
+
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {STEPS.map((step, i) => (
+            <motion.div
+              key={step.title}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ delay: i * 0.1, duration: 0.6, ease: EASE }}
+              className="relative rounded-2xl border border-emerald-100/10 bg-emerald-900/40 p-6 backdrop-blur-sm"
+            >
+              <span className="font-ledger text-sm font-semibold text-emerald-400">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              <div className="my-4 h-px w-10 bg-emerald-400/40" />
+              <h3 className="mb-2 text-lg font-semibold tracking-tight">
+                {step.title}
+              </h3>
+              <p className="text-sm leading-relaxed text-emerald-100/70">
+                {step.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Built for Nigeria                                                   */
+/* ------------------------------------------------------------------ */
+
+const LOCAL = [
+  {
+    title: "Naira-first",
+    desc: "Built from the ground up for Naira. ₦150,000 is exactly ₦150,000 — no currency confusion.",
+  },
+  {
+    title: "Simple payments",
+    desc: "Bank transfers and payment links that work with Nigerian banks. No Stripe, no PayPal needed.",
+  },
+  {
+    title: "Fast setup",
+    desc: "Sign up, add a client, send an invoice — done in two minutes. Free to start.",
+  },
+];
+
+function BuiltForNigeria() {
+  return (
+    <section className="py-24 sm:py-28">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="mb-14 text-center"
+        >
+          <p className="mb-3 font-ledger text-xs uppercase tracking-[0.25em] text-emerald-600">
+            Built for Nigeria
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Foreign apps don't always work here.
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
+            Involink was built for Nigerian entrepreneurs — the currency, the
+            payments, the way business actually happens.
+          </p>
+        </motion.div>
+
+        <div className="grid gap-5 md:grid-cols-3">
+          {LOCAL.map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ delay: i * 0.1, duration: 0.6, ease: EASE }}
+              className="rounded-2xl border border-emerald-600/15 bg-emerald-600/[0.04] p-7"
+            >
+              <span className="mb-4 block font-display text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                ₦
+              </span>
+              <h3 className="mb-2 text-lg font-semibold tracking-tight">
+                {item.title}
+              </h3>
+              <p className="text-sm leading-relaxed text-muted-foreground">
+                {item.desc}
+              </p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Pricing (aligned with the real plans)                               */
+/* ------------------------------------------------------------------ */
+
+const PLANS = [
+  {
+    name: "Free MVP",
+    price: "₦0",
+    period: "forever",
+    description: "For starting out",
+    features: ["5 invoices a month", "Basic invoice templates", "Email support", "Naira currency"],
+    cta: "Start Free",
+    highlighted: false,
+  },
+  {
+    name: "Enterprise",
+    price: "₦2,900",
+    period: "/month",
+    description: "For serious businesses",
+    features: [
+      "Unlimited invoices",
+      "Custom branding (logo & colors)",
+      "Payment link generation",
+      "Invoice reminders",
+      "Priority WhatsApp support",
+    ],
+    cta: "Choose Plan",
+    highlighted: true,
+  },
+];
+
+function Pricing() {
+  return (
+    <section id="pricing" className="bg-card/60 py-24 sm:py-28">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="mb-14 text-center"
+        >
+          <p className="mb-3 font-ledger text-xs uppercase tracking-[0.25em] text-emerald-600">
+            Pricing
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Simple pricing
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-lg text-muted-foreground">
+            Start free. Upgrade when you're ready — in Naira, of course.
+          </p>
+        </motion.div>
+
+        <div className="mx-auto grid max-w-3xl gap-6 md:grid-cols-2">
+          {PLANS.map((plan, i) => (
+            <motion.div
+              key={plan.name}
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ delay: i * 0.1, duration: 0.6, ease: EASE }}
+              whileHover={{ y: -4 }}
+              className={`relative flex flex-col rounded-2xl p-8 ${
+                plan.highlighted
+                  ? "bg-emerald-600 text-white shadow-e3"
+                  : "border border-emerald-900/10 bg-card shadow-e1"
+              }`}
+            >
+              {plan.highlighted && (
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-amber-400 px-3.5 py-1 font-ledger text-[10px] font-semibold uppercase tracking-widest text-amber-950">
+                  Best value
+                </span>
+              )}
+
+              <h3 className="text-lg font-semibold tracking-tight">
+                {plan.name}
+              </h3>
+              <p
+                className={`mt-1 text-sm ${plan.highlighted ? "text-emerald-50/80" : "text-muted-foreground"}`}
+              >
+                {plan.description}
+              </p>
+
+              <div className="mt-6 flex items-baseline gap-1.5">
+                <span className="font-ledger text-4xl font-semibold tracking-tight">
+                  {plan.price}
+                </span>
+                <span
+                  className={`text-sm ${plan.highlighted ? "text-emerald-50/80" : "text-muted-foreground"}`}
+                >
+                  {plan.period}
+                </span>
+              </div>
+
+              <ul className="mt-7 mb-8 space-y-3">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-start gap-2.5 text-sm">
+                    <Check
+                      className={`mt-0.5 h-4 w-4 shrink-0 ${plan.highlighted ? "text-emerald-200" : "text-emerald-600"}`}
+                    />
+                    <span
+                      className={
+                        plan.highlighted ? "text-emerald-50/95" : "text-foreground/80"
+                      }
+                    >
+                      {f}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                to={plan.highlighted ? "/pricing" : "/signup"}
+                className={`mt-auto rounded-xl px-6 py-3.5 text-center font-semibold transition-all active:scale-[0.98] ${
+                  plan.highlighted
+                    ? "bg-white text-emerald-700 hover:bg-emerald-50"
+                    : "bg-emerald-600 text-white hover:bg-emerald-700"
+                }`}
+              >
+                {plan.cta}
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* FAQ + CTA + Footer                                                  */
+/* ------------------------------------------------------------------ */
+
+const FAQS = [
+  {
+    q: "Do I need a credit card to start?",
+    a: "No. The free plan is free forever — 5 invoices a month with email support.",
+  },
+  {
+    q: "How do my clients pay me?",
+    a: "Share the payment link and your client pays with card or bank transfer. You can also record bank transfer payments manually.",
+  },
+  {
+    q: "Can I put my own branding on invoices?",
+    a: "Yes, on the Enterprise plan. Add your logo, brand colour and business details to every invoice.",
+  },
+  {
+    q: "What happens when I upgrade?",
+    a: "Changes take effect immediately. You keep all your invoices and clients.",
+  },
+];
+
+function FAQ() {
+  const [open, setOpen] = useState<number | null>(0);
+
+  return (
+    <section id="contact" className="py-24 sm:py-28">
+      <div className="mx-auto max-w-3xl px-5 sm:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="mb-12 text-center"
+        >
+          <p className="mb-3 font-ledger text-xs uppercase tracking-[0.25em] text-emerald-600">
+            FAQ
+          </p>
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Questions, answered
+          </h2>
+        </motion.div>
+
+        <div className="divide-y divide-emerald-900/10 rounded-2xl border border-emerald-900/10 bg-card px-6 shadow-e1">
+          {FAQS.map((faq, i) => {
+            const isOpen = open === i;
+            return (
+              <div key={faq.q}>
+                <button
+                  onClick={() => setOpen(isOpen ? null : i)}
+                  className="flex w-full items-center justify-between gap-6 py-5 text-left"
+                  aria-expanded={isOpen}
+                >
+                  <span className="font-medium text-foreground">{faq.q}</span>
+                  <span
+                    className={`font-ledger text-sm text-emerald-600 transition-transform duration-300 ${isOpen ? "rotate-45" : ""}`}
+                  >
+                    +
+                  </span>
+                </button>
+                <AnimatePresence initial={false}>
+                  {isOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <p className="pb-6 text-sm leading-relaxed text-muted-foreground">
+                        {faq.a}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CTA() {
+  return (
+    <section className="px-5 pb-24 sm:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-80px" }}
+        transition={{ duration: 0.8, ease: EASE }}
+        className="relative mx-auto max-w-6xl overflow-hidden rounded-3xl bg-emerald-950 px-6 py-16 text-center text-emerald-50 sm:px-12 sm:py-20"
+      >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-6 -top-14 font-display text-[200px] font-bold leading-none text-emerald-400/10"
+        >
+          ₦
+        </span>
+        <div className="relative">
+          <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+            Ready to get paid?
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-lg text-emerald-100/80">
+            Join Nigerian entrepreneurs who invoice with Involink — and stop
+            chasing payments.
+          </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <Link
+              to="/signup"
+              className="inline-flex items-center gap-2 rounded-xl bg-white px-8 py-4 font-semibold text-emerald-700 transition-all hover:bg-emerald-50 active:scale-[0.98]"
+            >
+              Create Free Account
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              to="/pricing"
+              className="rounded-xl border border-emerald-100/25 px-8 py-4 font-semibold text-emerald-50 transition-colors hover:bg-emerald-100/10"
+            >
+              Compare Plans
+            </Link>
+          </div>
+          <p className="mt-6 text-sm text-emerald-100/60">
+            No credit card required • Free forever plan
+          </p>
         </div>
       </motion.div>
     </section>
   );
-};
+}
 
-const Stats = () => {
+function Footer() {
   return (
-    <section className="py-16 border-y border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-900/30">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          <ScrollReveal>
-            <div className="text-center">
-              <p className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-2">
-                <AnimatedCounter end={25} />
-              </p>
-              <p className="text-sm text-gray-500">Active Users</p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.1}>
-            <div className="text-center">
-              <p className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-2">
-                ₦<AnimatedCounter end={150000} />
-              </p>
-              <p className="text-sm text-gray-500">Total Invoiced</p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.2}>
-            <div className="text-center">
-              <p className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-2">
-                <AnimatedCounter end={50} />
-              </p>
-              <p className="text-sm text-gray-500">Invoices Created</p>
-            </div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.3}>
-            <div className="text-center">
-              <p className="text-4xl lg:text-5xl font-bold text-emerald-600 mb-2">
-                100%
-              </p>
-              <p className="text-sm text-gray-500">Support Response</p>
-            </div>
-          </ScrollReveal>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const InteractiveFeatureCard = ({
-  icon: Icon,
-  title,
-  description,
-  features,
-  color = "emerald",
-  delay = 0,
-}: {
-  icon: any;
-  title: string;
-  description: string;
-  features: string[];
-  color?: string;
-  delay?: number;
-}) => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-50px" });
-
-  const colorMap: Record<string, string> = {
-    emerald: "from-emerald-500 to-emerald-600",
-    blue: "from-blue-500 to-blue-600",
-    purple: "from-purple-500 to-purple-600",
-    amber: "from-amber-500 to-amber-600",
-  };
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.5, delay }}
-      whileHover={{ scale: 1.02, y: -5 }}
-      className="group relative p-6 rounded-3xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 hover:border-emerald-300 dark:hover:border-emerald-600 transition-all hover:shadow-xl cursor-pointer overflow-hidden"
-    >
-      <div
-        className={`absolute inset-0 bg-gradient-to-br ${colorMap[color]} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-      />
-
-      <div className="relative z-10">
-        <motion.div
-          whileHover={{ rotate: 360 }}
-          transition={{ duration: 0.6 }}
-          className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${colorMap[color]} flex items-center justify-center mb-4 shadow-lg`}
-        >
-          <Icon className="w-7 h-7 text-white" />
-        </motion.div>
-
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-emerald-600 transition-colors">
-          {title}
-        </h3>
-
-        <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
-          {description}
-        </p>
-
-        <ul className="space-y-2">
-          {features.map((feature, i) => (
-            <motion.li
-              key={i}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: delay + i * 0.1 }}
-              className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300"
-            >
-              <Check className={`w-4 h-4 text-${color}-500 shrink-0`} />
-              <span>{feature}</span>
-            </motion.li>
-          ))}
-        </ul>
-      </div>
-    </motion.div>
-  );
-};
-
-const FeaturesSection = () => {
-  const featureGroups = [
-    {
-      icon: FileText,
-      title: "Invoice Creation",
-      description: "Professional invoices in minutes",
-      features: [
-        "Custom invoice numbers",
-        "Line items + discounts",
-        "VAT/tax support",
-        "Your branding",
-      ],
-      color: "emerald",
-    },
-    {
-      icon: Send,
-      title: "Send & Share",
-      description: "Reach clients your way",
-      features: [
-        "Email delivery",
-        "WhatsApp sharing",
-        "Payment links",
-        "PDF export",
-      ],
-      color: "blue",
-    },
-    {
-      icon: Wallet,
-      title: "Track Payments",
-      description: "Never miss a payment",
-      features: [
-        "Real-time status",
-        "Payment reminders",
-        "Auto-receipts",
-        "Bank transfer tracking",
-      ],
-      color: "purple",
-    },
-    {
-      icon: BarChart3,
-      title: "Business Insights",
-      description: "Know your numbers",
-      features: [
-        "Revenue reports",
-        "Outstanding totals",
-        "Client history",
-        "Export to Excel",
-      ],
-      color: "amber",
-    },
-  ];
-
-  return (
-    <section
-      id="features"
-      className="py-24 bg-gray-50 dark:bg-gray-900/50 overflow-hidden"
-    >
-      <div className="max-w-7xl mx-auto px-6">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Everything you need
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Powerful features, no complexity. Just what Nigerian entrepreneurs
-              need to get paid.
-            </p>
-          </div>
-        </ScrollReveal>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featureGroups.map((group, i) => (
-            <InteractiveFeatureCard key={i} {...group} delay={i * 0.1} />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const HowItWorks = () => {
-  const steps = [
-    { num: "01", title: "Sign Up", desc: "Create your account in 2 minutes" },
-    { num: "02", title: "Add Client", desc: "Enter your client's details" },
-    { num: "03", title: "Create Invoice", desc: "Add items, set price, done" },
-    { num: "04", title: "Get Paid", desc: "Send and track payment" },
-  ];
-
-  return (
-    <section className="py-24 bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-6">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-4">
-              How it works
-            </h2>
-            <p className="text-xl text-gray-400">
-              From sign-up to getting paid in 4 simple steps
-            </p>
-          </div>
-        </ScrollReveal>
-
-        <div className="grid md:grid-cols-4 gap-8">
-          {steps.map((step, i) => (
-            <ScrollReveal key={i} delay={i * 0.1}>
-              <motion.div
-                whileHover={{ scale: 1.05, y: -10 }}
-                className="relative p-8 rounded-3xl bg-gray-800 border border-gray-700 hover:border-emerald-500 transition-all cursor-pointer group"
-              >
-                <span className="text-6xl font-bold text-emerald-500/20 absolute top-4 right-4">
-                  {step.num}
-                </span>
-                <h3 className="text-2xl font-bold mb-2 group-hover:text-emerald-400 transition-colors">
-                  {step.title}
-                </h3>
-                <p className="text-gray-400">{step.desc}</p>
-              </motion.div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const ValueProps = () => {
-  return (
-    <section className="py-24">
-      <div className="max-w-7xl mx-auto px-6">
-        <ScrollReveal>
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Built for Nigeria
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              We get it. Foreign apps don't always work here. We built Involink
-              specifically for Nigerian entrepreneurs.
-            </p>
-          </div>
-        </ScrollReveal>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <ScrollReveal delay={0}>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="p-8 rounded-3xl bg-gradient-to-br from-emerald-500/10 to-transparent border border-emerald-200 dark:border-emerald-800"
-            >
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                ₦Naira-First
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Built from the ground up for Naira. No currency confusion —
-                ₦150,000 is exactly ₦150,000.
-              </p>
-            </motion.div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.1}>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="p-8 rounded-3xl bg-gradient-to-br from-blue-500/10 to-transparent border border-blue-200 dark:border-blue-800"
-            >
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Simple Payments
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Bank transfers, payment links that work with Nigerian banks. No
-                Stripe, no PayPal needed.
-              </p>
-            </motion.div>
-          </ScrollReveal>
-          <ScrollReveal delay={0.2}>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="p-8 rounded-3xl bg-gradient-to-br from-purple-500/10 to-transparent border border-purple-200 dark:border-purple-800"
-            >
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">
-                Fast Setup
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Sign up, add client, send invoice — done in 2 minutes. No credit
-                card to start.
-              </p>
-            </motion.div>
-          </ScrollReveal>
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const PricingSection = () => {
-  const plans = [
-    {
-      name: "Free",
-      price: "₦0",
-      description: "Perfect for starting out",
-      features: [
-        "10 invoices/month",
-        "Basic templates",
-        "Email support",
-        "Naira currency",
-      ],
-      cta: "Start Free",
-      highlighted: false,
-    },
-    {
-      name: "Pro",
-      price: "₦2,900",
-      period: "/month",
-      description: "For serious businesses",
-      features: [
-        "Unlimited invoices",
-        "Your branding",
-        "Priority support",
-        "Payment links",
-        "Client portal",
-      ],
-      cta: "Start Trial",
-      highlighted: true,
-    },
-  ];
-
-  return (
-    <section id="pricing" className="py-24 bg-gray-50 dark:bg-gray-900/50">
-      <div className="max-w-7xl mx-auto px-6">
-        <ScrollReveal>
-          <div className="text-center mb-12">
-            <h2 className="text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-              Simple pricing
-            </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400">
-              Start free. Upgrade when you're ready.
-            </p>
-          </div>
-        </ScrollReveal>
-
-        <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
-          {plans.map((plan, i) => (
-            <ScrollReveal key={i} delay={i * 0.1}>
-              <motion.div
-                whileHover={{ scale: 1.02, y: -5 }}
-                className={`relative p-8 rounded-3xl transition-all cursor-pointer ${
-                  plan.highlighted
-                    ? "bg-emerald-600 text-white shadow-2xl shadow-emerald-500/30"
-                    : "bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 hover:border-emerald-400"
-                }`}
-              >
-                {plan.highlighted && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-amber-400 text-amber-900 text-sm font-bold">
-                    BEST VALUE
-                  </span>
-                )}
-
-                <h3
-                  className={`text-2xl font-bold mb-2 ${plan.highlighted ? "text-white" : "text-gray-900 dark:text-white"}`}
-                >
-                  {plan.name}
-                </h3>
-                <p
-                  className={`text-sm mb-6 ${plan.highlighted ? "text-emerald-100" : "text-gray-500"}`}
-                >
-                  {plan.description}
-                </p>
-
-                <div className="mb-6">
-                  <span
-                    className={`text-5xl font-bold ${plan.highlighted ? "text-white" : "text-gray-900 dark:text-white"}`}
-                  >
-                    {plan.price}
-                  </span>
-                  {plan.period && (
-                    <span
-                      className={`text-sm ${plan.highlighted ? "text-emerald-100" : "text-gray-500"}`}
-                    >
-                      {plan.period}
-                    </span>
-                  )}
-                </div>
-
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((feature, j) => (
-                    <li key={j} className="flex items-center gap-2 text-sm">
-                      <Check
-                        className={`w-5 h-5 ${plan.highlighted ? "text-emerald-200" : "text-emerald-500"}`}
-                      />
-                      <span
-                        className={
-                          plan.highlighted
-                            ? "text-white/90"
-                            : "text-gray-600 dark:text-gray-300"
-                        }
-                      >
-                        {feature}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  to="/signup"
-                  className={`block w-full py-4 rounded-xl text-center font-semibold transition-all ${
-                    plan.highlighted
-                      ? "bg-white text-emerald-600 hover:bg-gray-100"
-                      : "bg-emerald-500 text-white hover:bg-emerald-600"
-                  }`}
-                >
-                  {plan.cta}
-                </Link>
-              </motion.div>
-            </ScrollReveal>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const CTASection = () => {
-  return (
-    <section className="py-24 bg-gray-900">
-      <div className="max-w-7xl mx-auto px-6">
-        <ScrollReveal>
-          <motion.div
-            whileHover={{ scale: 1.01 }}
-            className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-3xl p-12 lg:p-20 text-center relative overflow-hidden"
-          >
-            <div className="absolute inset-0">
-              <div className="absolute top-0 -left-20 w-60 h-60 bg-white/10 blur-3xl rounded-full" />
-              <div className="absolute bottom-0 -right-20 w-60 h-60 bg-white/10 blur-3xl rounded-full" />
-            </div>
-
-            <div className="relative z-10">
-              <h2 className="text-4xl lg:text-5xl font-bold text-white mb-4">
-                Ready to get paid?
-              </h2>
-              <p className="text-emerald-100 text-xl mb-8 max-w-xl mx-auto">
-                Join Nigerian entrepreneurs who use Involink to create
-                professional invoices and track payments.
-              </p>
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  to="/signup"
-                  className="inline-flex items-center gap-2 px-10 py-5 rounded-xl bg-white text-emerald-600 font-bold text-lg hover:bg-gray-100 transition-colors"
-                >
-                  Create Free Account
-                  <ArrowRight className="w-6 h-6" />
-                </Link>
-              </motion.div>
-            </div>
-          </motion.div>
-        </ScrollReveal>
-      </div>
-    </section>
-  );
-};
-
-const Footer = () => {
-  return (
-    <footer className="py-12 border-t border-gray-100 dark:border-gray-800">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid md:grid-cols-4 gap-8 mb-8">
-          <div className="md:col-span-2">
-            <Logo className="mb-4" />
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
+    <footer className="border-t border-emerald-900/10 py-14">
+      <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        <div className="grid gap-10 md:grid-cols-[2fr_1fr_1fr]">
+          <div>
+            <Logo />
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted-foreground">
               Nigeria's simplest invoicing platform. Create professional
-              invoices, send to clients, and track payments — all in Naira.
+              invoices, send them to clients, and track payments — all in
+              Naira.
             </p>
-            <div className="flex items-center gap-4 text-sm text-gray-500">
-              <MapPin className="w-4 h-4" />
-              <span>Lagos, Nigeria</span>
-            </div>
+            <p className="mt-5 flex items-center gap-2 text-sm text-muted-foreground">
+              <MapPin className="h-4 w-4 text-emerald-600" /> Lagos, Nigeria
+            </p>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Product</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <a href="#features" className="hover:text-emerald-500">
-                  Features
-                </a>
-              </li>
-              <li>
-                <a href="#pricing" className="hover:text-emerald-500">
-                  Pricing
-                </a>
-              </li>
-              <li>
-                <Link to="/login" className="hover:text-emerald-500">
-                  Login
-                </Link>
-              </li>
+            <h4 className="mb-4 text-sm font-semibold">Product</h4>
+            <ul className="space-y-3 text-sm text-muted-foreground">
+              <li><a href="#features" className="hover:text-foreground">Features</a></li>
+              <li><a href="#pricing" className="hover:text-foreground">Pricing</a></li>
+              <li><Link to="/login" className="hover:text-foreground">Log In</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold mb-4">Company</h4>
-            <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-              <li>
-                <Link to="/about" className="hover:text-emerald-500">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="hover:text-emerald-500">
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link to="/privacy" className="hover:text-emerald-500">
-                  Privacy
-                </Link>
-              </li>
+            <h4 className="mb-4 text-sm font-semibold">Company</h4>
+            <ul className="space-y-3 text-sm text-muted-foreground">
+              <li><Link to="/about" className="hover:text-foreground">About</Link></li>
+              <li><Link to="/contact" className="hover:text-foreground">Contact</Link></li>
+              <li><Link to="/privacy" className="hover:text-foreground">Privacy</Link></li>
             </ul>
           </div>
         </div>
 
-        <div className="pt-8 border-t border-gray-100 dark:border-gray-800 text-center">
-          <p className="text-sm text-gray-500">
-            © 2026 Involink. All rights reserved.
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-emerald-900/10 pt-6 sm:flex-row">
+          <p className="font-ledger text-xs uppercase tracking-widest text-muted-foreground">
+            © 2026 Involink · Naira first
+          </p>
+          <p className="flex items-center gap-2 text-xs text-muted-foreground">
+            <CreditCard className="h-3.5 w-3.5" /> Payments powered by Paystack
+            <Building2 className="ml-3 h-3.5 w-3.5" /> Lagos, NG
           </p>
         </div>
       </div>
     </footer>
   );
-};
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-background text-foreground antialiased">
       <Navbar />
-      <HeroSection />
-      <Stats />
-      <FeaturesSection />
+      <Hero />
+      <LedgerStats />
+      <Features />
       <HowItWorks />
-      <ValueProps />
-      <PricingSection />
-      <CTASection />
+      <BuiltForNigeria />
+      <Pricing />
+      <FAQ />
+      <CTA />
       <Footer />
     </div>
   );

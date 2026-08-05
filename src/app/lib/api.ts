@@ -158,6 +158,7 @@ class ApiService {
     return this.request('/auth/signup', {
       method: 'POST',
       body: JSON.stringify({ email, password, name: sanitizedName }),
+      skipSanitize: true,
     });
   }
 
@@ -199,6 +200,30 @@ class ApiService {
     return this.request('/auth/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
+    });
+  }
+
+  async getTaxRates() {
+    return this.request('/settings/tax-rates');
+  }
+
+  async createTaxRate(data: Record<string, unknown>) {
+    return this.request('/settings/tax-rates', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateTaxRate(id: string, data: Record<string, unknown>) {
+    return this.request(`/settings/tax-rates/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteTaxRate(id: string) {
+    return this.request(`/settings/tax-rates/${encodeURIComponent(id)}`, {
+      method: 'DELETE',
     });
   }
 

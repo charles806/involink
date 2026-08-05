@@ -18,11 +18,11 @@ export default function About() {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-background">
       <PublicNavbar />
 
       <section className="pt-32 pb-16 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/50 via-white to-white dark:from-emerald-950/20 dark:via-gray-900 dark:to-gray-900" />
+        <div className="absolute inset-0 bg-gradient-to-b from-emerald-50/60 via-background to-background" />
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 -left-32 w-96 h-96 bg-emerald-500/20 blur-[100px] rounded-full" />
           <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-blue-500/20 blur-[100px] rounded-full" />
@@ -33,8 +33,8 @@ export default function About() {
           animate={{ opacity: 1, y: 0 }}
           className="relative z-10 max-w-4xl mx-auto px-6 text-center"
         >
-          <h1 className="text-5xl lg:text-6xl font-bold mb-6" style={{ fontFamily: 'Poppins, sans-serif' }}>
-            About <span className="text-emerald-500">Involink</span>
+          <h1 className="text-5xl lg:text-6xl font-bold mb-6">
+            About <span className="text-emerald-600">Involink</span>
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Empowering Nigerian entrepreneurs with modern invoicing tools built for the local ecosystem.
@@ -51,9 +51,9 @@ export default function About() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="p-6 rounded-3xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-white/10 text-center"
+                className="p-6 rounded-2xl bg-card border border-border shadow-e2 text-center"
               >
-                <div className="text-4xl font-bold text-emerald-500 mb-2">{stat.value}</div>
+                <div className="text-4xl font-bold text-emerald-600 mb-2">{stat.value}</div>
                 <div className="text-muted-foreground">{stat.label}</div>
               </motion.div>
             ))}
@@ -68,7 +68,7 @@ export default function About() {
             whileInView={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>Our Story</h2>
+            <h2 className="text-4xl font-bold mb-4">Our Story</h2>
           </motion.div>
 
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -90,12 +90,12 @@ export default function About() {
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
-              className="p-8 rounded-3xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-white/10"
+              className="p-8 rounded-2xl bg-card border border-border shadow-e2"
             >
               <div className="grid grid-cols-2 gap-6 flex items-center justify-center">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-emerald-500" />
+                    <MapPin className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
                     <div className="font-semibold">Based in</div>
@@ -104,7 +104,7 @@ export default function About() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                    <Calendar className="w-6 h-6 text-emerald-500" />
+                    <Calendar className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
                     <div className="font-semibold">Founded</div>
@@ -113,7 +113,7 @@ export default function About() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                    <Users className="w-6 h-6 text-emerald-500" />
+                    <Users className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
                     <div className="font-semibold">Team</div>
@@ -122,7 +122,7 @@ export default function About() {
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
-                    <Globe className="w-6 h-6 text-emerald-500" />
+                    <Globe className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
                     <div className="font-semibold">Presence</div>
@@ -136,14 +136,14 @@ export default function About() {
       </section>
 
       <section className="py-16 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-white via-emerald-50/30 to-white dark:from-gray-900 dark:via-emerald-950/10 dark:to-gray-900" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-emerald-50/30 to-background" />
         <div className="relative z-10 max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold mb-4" style={{ fontFamily: 'Poppins, sans-serif' }}>Meet Our Team</h2>
+            <h2 className="text-4xl font-bold mb-4">Meet Our Team</h2>
             <p className="text-muted-foreground">The people behind Involink</p>
           </motion.div>
 
@@ -154,7 +154,7 @@ export default function About() {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="p-6 rounded-3xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl border border-white/30 dark:border-white/10 text-center hover:border-emerald-500/30 transition-all duration-300"
+                className="p-6 rounded-2xl bg-card border border-border shadow-e2 text-center hover:border-emerald-500/30 transition-all duration-300"
               >
                 <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-2xl font-bold">
                   {member.initial}
@@ -167,7 +167,7 @@ export default function About() {
         </div>
       </section>
 
-      <footer className="py-8 bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border-t border-white/30 dark:border-white/10">
+      <footer className="py-8 bg-background/80 backdrop-blur-xl border-t border-border">
         <div className="max-w-7xl mx-auto px-6 text-center text-muted-foreground">
           <p>© 2026 Involink. All rights reserved.</p>
         </div>

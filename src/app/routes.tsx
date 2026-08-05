@@ -1,10 +1,12 @@
 import { createBrowserRouter, Navigate, useLocation } from "react-router";
 import { Layout } from "./components/Layout";
 import { Dashboard } from "./pages/Dashboard";
+import { Invoices } from "./pages/Invoices";
 import { Clients } from "./pages/Clients";
 import { InvoiceCreation } from "./pages/InvoiceCreation";
 import { InvoiceDetail } from "./pages/InvoiceDetail";
 import { Settings } from "./pages/Settings";
+import { NotFound, ErrorPage } from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
@@ -19,7 +21,6 @@ import Legal from "./pages/Legal";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Cookies from "./pages/Cookies";
-import Profile from "./pages/Profile";
 import Onboarding from "./pages/Onboarding";
 import Payment from "./pages/Payment";
 import VerifySubscription from "./pages/VerifySubscription";
@@ -73,8 +74,10 @@ export const router = createBrowserRouter([
   {
     path: "/app",
     Component: AppLayout,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, Component: Dashboard },
+      { path: "invoices", Component: Invoices },
       { path: "clients", Component: Clients },
       { path: "invoices/new", Component: InvoiceCreation },
       { path: "invoices/edit/:id", Component: InvoiceCreation },
@@ -82,4 +85,5 @@ export const router = createBrowserRouter([
       { path: "settings", Component: Settings },
     ],
   },
+  { path: "*", Component: NotFound },
 ]);

@@ -51,17 +51,17 @@ export default function VerifySubscription() {
   }, [reference, navigate, updateUser]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-white p-8 rounded-3xl shadow-xl max-w-md w-full text-center"
+        className="bg-card border border-border p-8 rounded-3xl shadow-e3 max-w-md w-full text-center"
       >
         {status === 'verifying' && (
           <div className="space-y-4">
             <Loader2 className="w-16 h-16 text-emerald-500 animate-spin mx-auto" />
-            <h2 className="text-2xl font-bold text-gray-900">Verifying Payment...</h2>
-            <p className="text-gray-500">Please wait while we confirm your subscription.</p>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Verifying Payment...</h2>
+            <p className="text-muted-foreground">Please wait while we confirm your subscription.</p>
           </div>
         )}
 
@@ -74,9 +74,9 @@ export default function VerifySubscription() {
             >
               <CheckCircle2 className="w-20 h-20 text-emerald-500 mx-auto" />
             </motion.div>
-            <h2 className="text-2xl font-bold text-gray-900">Welcome to Enterprise!</h2>
-            <p className="text-gray-500">Your subscription has been successfully activated.</p>
-            <p className="text-sm text-emerald-600 font-medium animate-pulse">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Welcome to Enterprise!</h2>
+            <p className="text-muted-foreground">Your subscription has been successfully activated.</p>
+            <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium animate-pulse">
               Redirecting to dashboard...
             </p>
           </div>
@@ -86,12 +86,12 @@ export default function VerifySubscription() {
           <div className="space-y-6">
             <XCircle className="w-16 h-16 text-red-500 mx-auto" />
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Payment Failed</h2>
+              <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-2">Payment Failed</h2>
               <p className="text-red-500">{errorMessage}</p>
             </div>
             <button
               onClick={() => navigate('/pricing')}
-              className="w-full py-3 px-4 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors"
+              className="w-full py-3 px-4 bg-foreground text-background rounded-xl font-medium hover:bg-foreground/90 transition-colors"
             >
               Return to Pricing
             </button>

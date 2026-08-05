@@ -112,8 +112,13 @@ export function PaystackPayment({ invoiceId, amount, email, onSuccess, onClose }
       <button
         onClick={handlePayment}
         disabled={isLoading || !isInitialized}
-        className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-emerald-600 text-white hover:bg-emerald-700 h-10 px-4 py-2"
+        className="relative inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-emerald-600 text-white hover:bg-emerald-700 h-10 px-4 py-2 active:scale-[0.98] overflow-hidden w-full"
       >
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-md bg-emerald-400/20 blur-md animate-pulse"
+        />
+        <span className="relative inline-flex items-center gap-2">
         {isLoading ? (
           <>
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -127,8 +132,9 @@ export function PaystackPayment({ invoiceId, amount, email, onSuccess, onClose }
             Pay with Paystack
           </>
         )}
+        </span>
       </button>
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs text-muted-foreground mt-2">
         Secure payment powered by Paystack
       </p>
     </div>
