@@ -293,9 +293,17 @@ class ApiService {
     });
   }
 
-  async sendInvoice(id: string) {
+  async sendInvoice(id: string, opts: { tone?: "friendly" | "firm" } = {}) {
     return this.request(`/invoices/${encodeURIComponent(id)}/send`, {
-      method: 'POST',
+      method: "POST",
+      body: JSON.stringify({ tone: opts.tone || "friendly" }),
+    });
+  }
+
+  async recordPayment(id: string, data: { amount: number | string; method: string; reference?: string }) {
+    return this.request(`/invoices/${encodeURIComponent(id)}/record-payment`, {
+      method: "POST",
+      body: JSON.stringify(data),
     });
   }
 

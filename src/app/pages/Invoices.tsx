@@ -7,7 +7,7 @@ import {
   Loader2,
   Eye,
   Pencil,
-  Send,
+  BellRing,
   CheckCircle2,
   Trash2,
   FileText,
@@ -129,7 +129,7 @@ export function Invoices() {
   const handleSendReminder = async (invoice: any) => {
     setSendBusyId(invoice.id);
     try {
-      await api.sendInvoice(invoice.id);
+      await api.sendInvoice(invoice.id, { tone: "friendly" });
       toast.success(`Reminder sent for ${invoice.invoice_number || "invoice"}`);
       loadInvoices(false);
     } catch (err: any) {
@@ -343,13 +343,28 @@ export function Invoices() {
                             <button
                               onClick={() => handleSendReminder(invoice)}
                               disabled={paid || draft || sendBusyId === invoice.id}
-                              className="p-2 text-muted-foreground hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-500/20 rounded-lg transition-colors disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
-                              title={paid ? "Already paid" : draft ? "Draft not yet sent" : "Send reminder"}
+                              className="relative p-2 text-muted-foreground hover:text-amber-600 hover:bg-amber-100 dark:hover:bg-amber-500/20 rounded-lg transition-colors disabled:opacity-35 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+                              title={
+                                paid
+                                  ? "Already paid"
+                                  : draft
+                                  ? "Draft not yet sent"
+                                  : (invoice.reminder_count || 0) > 0
+                                  ? `Send reminder (${invoice.reminder_count} sent)`
+                                  : "Send reminder"
+                              }
                             >
                               {sendBusyId === invoice.id ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
                               ) : (
-                                <Send className="w-4 h-4" />
+                                <>
+                                  <BellRing className="w-4 h-4" />
+                                  {(invoice.reminder_count || 0) > 0 && (
+                                    <span className="absolute -top-1 -right-1 inline-flex items-center justify-center min-w-[1.1rem] h-4 px-1 rounded-full bg-amber-500 text-white text-[10px] font-semibold">
+                                      {invoice.reminder_count}
+                                    </span>
+                                  )}
+                                </>
                               )}
                             </button>
                             <button

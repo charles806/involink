@@ -668,8 +668,8 @@ const PLANS = [
     highlighted: false,
   },
   {
-    name: "Enterprise",
-    price: "₦2,900",
+    name: "Pro",
+    price: "₦9,999",
     period: "/month",
     description: "For serious businesses",
     features: [

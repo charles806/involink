@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { GlassCard } from "../components/GlassCard";
 import { StatusBadge } from "../components/StatusBadge";
-import { Download, Send, CheckCircle, ArrowLeft, ExternalLink, Clock, AlertTriangle, CreditCard, History } from "lucide-react";
+import { Download, Send, CheckCircle, ArrowLeft, ExternalLink, Clock, AlertTriangle, CreditCard, History, BellRing, Loader2, CheckCircle2 } from "lucide-react";
 import { NavLink, useParams } from "react-router";
 import { toast } from "sonner";
 import api from "../lib/api";
@@ -31,6 +31,11 @@ export function InvoiceDetail() {
   const [paymentMethod, setPaymentMethod] = useState("bank_transfer");
   const [paymentReference, setPaymentReference] = useState("");
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+  const [recordedSummary, setRecordedSummary] = useState<any>(null);
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminderTone, setReminderTone] = useState<"friendly" | "firm">("friendly");
+  const [isSending, setIsSending] = useState(false);
+  const [sentSummary, setSentSummary] = useState<any>(null);
 
   useEffect(() => {
     loadInvoice();
@@ -60,12 +65,32 @@ export function InvoiceDetail() {
     }
   };
 
-  const handleSendReminder = async () => {
+  const handleSendInvoice = async () => {
+    setIsSending(true);
     try {
-      await api.sendInvoice(id!);
-      toast.success("Reminder sent!");
+      await api.sendInvoice(id!, { tone: "friendly" });
+      toast.success("Invoice sent to your client!");
+      loadInvoice();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invoice");
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleSendReminder = async () => {
+    setIsSending(true);
+    try {
+      const updated = await api.sendInvoice(id!, { tone: reminderTone });
+      const n = updated?.reminder_count ?? (invoice?.reminder_count || 0) + 1;
+      setSentSummary({ count: n, tone: reminderTone });
+      toast.success(reminderTone === "firm" ? "Firm reminder sent!" : "Reminder sent!");
+      setShowReminderModal(false);
+      loadInvoice();
     } catch (err: any) {
       toast.error(err.message || "Failed to send reminder");
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -77,15 +102,29 @@ export function InvoiceDetail() {
 
     setIsRecordingPayment(true);
     try {
-      await api.markInvoicePaid(id!);
+      const updated = await api.recordPayment(id!, {
+        amount: paymentAmount,
+        method: paymentMethod,
+        reference: paymentReference,
+      });
+      setRecordedSummary({
+        amount: parseFloat(paymentAmount),
+        method: updated?.payment?.method || paymentMethod,
+        reference: updated?.payment?.reference || paymentReference || "—",
+      });
       toast.success(`Payment of ₦${parseFloat(paymentAmount).toLocaleString()} recorded!`);
-      setShowPaymentModal(false);
       loadInvoice();
     } catch (err: any) {
       toast.error(err.message || "Failed to record payment");
     } finally {
       setIsRecordingPayment(false);
     }
+  };
+
+  const closePaymentModal = () => {
+    if (isRecordingPayment) return;
+    setShowPaymentModal(false);
+    setRecordedSummary(null);
   };
 
   const formatCurrency = (amount: number) => {
@@ -186,13 +225,30 @@ export function InvoiceDetail() {
             <Download className="w-4 h-4" /> Print
           </button>
           
-          <button
-            onClick={handleSendReminder}
-            disabled={invoice.status === "paid"}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/20 rounded-xl font-medium transition-colors text-sm disabled:opacity-50"
-          >
-            <Send className="w-4 h-4" /> Remind
-          </button>
+          {invoice.status !== "paid" && invoice.status !== "draft" && (
+            <button
+              onClick={() => setShowReminderModal(true)}
+              className="relative flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-400 dark:hover:bg-amber-500/20 border border-amber-200 dark:border-amber-500/20 rounded-xl font-medium transition-colors text-sm"
+            >
+              <BellRing className="w-4 h-4" /> Remind
+              {(invoice.reminder_count || 0) > 0 && (
+                <span className="inline-flex items-center justify-center min-w-[1.35rem] h-5 px-1.5 rounded-full bg-amber-600 text-white text-[11px] font-semibold">
+                  {invoice.reminder_count}
+                </span>
+              )}
+            </button>
+          )}
+
+          {invoice.status === "draft" && (
+            <button
+              onClick={handleSendInvoice}
+              disabled={isSending}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold shadow-e2 transition-all active:scale-95 text-sm disabled:opacity-60 disabled:active:scale-100"
+            >
+              {isSending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+              {isSending ? "Sending..." : "Send Invoice"}
+            </button>
+          )}
           
           {invoice.status !== "paid" ? (
             <>
@@ -225,6 +281,130 @@ export function InvoiceDetail() {
       </motion.div>
 
       <AnimatePresence>
+        {showReminderModal && !sentSummary && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="bg-card rounded-2xl p-6 w-full max-w-md shadow-e4 border border-border"
+            >
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-500/20 flex items-center justify-center">
+                  <BellRing className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                  Send a reminder
+                </h3>
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                {invoice.invoice_number} for{" "}
+                <span className="font-medium text-foreground">{invoice.clients?.name || "unknown client"}</span>
+                {" "}· {formatCurrency(invoice.total)}
+                {isOverdue && ` · ${getDaysOverdue()} day${getDaysOverdue() !== 1 ? "s" : ""} overdue`}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                A reminder email with the payment link goes to{" "}
+                <span className="text-foreground font-medium">{invoice.clients?.email || "no email on file"}</span>.
+              </p>
+
+              <div className="mt-5">
+                <label className="text-sm font-medium text-muted-foreground">Tone</label>
+                <div className="grid grid-cols-2 gap-2 mt-1.5">
+                  <button
+                    onClick={() => setReminderTone("friendly")}
+                    className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.98] ${
+                      reminderTone === "friendly"
+                        ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400"
+                        : "border-border bg-input-background text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <span className="text-lg">🙂</span>
+                    Friendly nudge
+                  </button>
+                  <button
+                    onClick={() => setReminderTone("firm")}
+                    className={`flex flex-col items-center gap-1 px-4 py-3 rounded-xl border text-sm font-medium transition-all active:scale-[0.98] ${
+                      reminderTone === "firm"
+                        ? "border-amber-500 bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400"
+                        : "border-border bg-input-background text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <span className="text-lg">😐</span>
+                    Firm reminder
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={() => setShowReminderModal(false)}
+                  disabled={isSending}
+                  className="flex-1 px-4 py-3 bg-accent text-foreground rounded-xl font-medium hover:bg-accent/70 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendReminder}
+                  disabled={isSending}
+                  className="flex-1 px-4 py-3 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-semibold disabled:opacity-50 transition-all active:scale-[0.98]"
+                >
+                  {isSending ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Sending...
+                    </span>
+                  ) : (
+                    `Send ${reminderTone === "firm" ? "Firm" : "Friendly"} Reminder`
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {showReminderModal && sentSummary && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="bg-card rounded-2xl p-8 w-full max-w-sm shadow-e4 border border-border text-center"
+            >
+              <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                Reminder sent!
+              </h3>
+              <p className="text-sm text-muted-foreground mt-2">
+                {sentSummary.tone === "firm" ? "Firm" : "Friendly"} reminder #{sentSummary.count} for{" "}
+                {invoice.invoice_number} is on its way to {invoice.clients?.email || "your client"}.
+              </p>
+              <button
+                onClick={() => {
+                  setShowReminderModal(false);
+                  setSentSummary(null);
+                }}
+                className="mt-6 w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition-all active:scale-[0.98]"
+              >
+                Done
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+
         {showPaymentModal && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -239,6 +419,30 @@ export function InvoiceDetail() {
               transition={{ duration: 0.18, ease: "easeOut" }}
               className="bg-card rounded-2xl p-6 w-full max-w-md shadow-e4 border border-border"
             >
+            {recordedSummary ? (
+              <>
+                <div className="text-center py-2">
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                    <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+                  </div>
+                  <h3 className="text-xl font-semibold tracking-tight text-foreground">Payment recorded</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    {formatCurrency(recordedSummary.amount)} via{" "}
+                    <span className="capitalize font-medium text-foreground">
+                      {recordedSummary.method.replace(/_/g, " ")}
+                    </span>
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">Reference: {recordedSummary.reference}</p>
+                </div>
+                <button
+                  onClick={closePaymentModal}
+                  className="mt-6 w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold"
+                >
+                  Done
+                </button>
+              </>
+            ) : (
+              <>
             <h3 className="text-xl font-semibold tracking-tight text-foreground mb-4">Record Payment</h3>
             
             <div className="space-y-4">
@@ -281,8 +485,9 @@ export function InvoiceDetail() {
             
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => setShowPaymentModal(false)}
-                className="flex-1 px-4 py-3 bg-accent text-foreground rounded-xl font-medium hover:bg-accent/70"
+                onClick={closePaymentModal}
+                disabled={isRecordingPayment}
+                className="flex-1 px-4 py-3 bg-accent text-foreground rounded-xl font-medium hover:bg-accent/70 disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -291,9 +496,17 @@ export function InvoiceDetail() {
                 disabled={isRecordingPayment}
                 className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold disabled:opacity-50 transition-all active:scale-[0.98]"
               >
-                {isRecordingPayment ? "Recording..." : "Record Payment"}
+                {isRecordingPayment ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" /> Recording...
+                  </span>
+                ) : (
+                  "Record Payment"
+                )}
               </button>
             </div>
+              </>
+            )}
           </motion.div>
         </motion.div>
       )}
@@ -461,6 +674,20 @@ export function InvoiceDetail() {
                   <div className="pb-4 border-l-2 border-border pl-3 -ml-1">
                     <p className="text-sm font-medium text-foreground">Invoice Sent</p>
                     <p className="text-xs text-muted-foreground">{formatDateTime(invoice.sent_at)}</p>
+                  </div>
+                </div>
+              )}
+              {invoice.last_reminded_at && (
+                <div className="flex gap-3 relative">
+                  <div className="w-6 h-6 rounded-full bg-amber-100 dark:bg-amber-900 border-2 border-card flex items-center justify-center shrink-0 mt-0.5 z-10">
+                    <BellRing className="w-3 h-3 text-amber-700 dark:text-amber-400" />
+                  </div>
+                  <div className="pb-4 border-l-2 border-border pl-3 -ml-1">
+                    <p className="text-sm font-medium text-foreground">
+                      Reminder sent
+                      {invoice.reminder_count > 1 && ` (×${invoice.reminder_count})`}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{formatDateTime(invoice.last_reminded_at)}</p>
                   </div>
                 </div>
               )}
