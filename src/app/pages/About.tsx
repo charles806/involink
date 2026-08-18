@@ -5,9 +5,9 @@ import { PublicNavbar } from "../components/PublicNavbar";
 
 export default function About() {
   const stats = [
-    { label: "Active Users", value: "100+" },
-    { label: "Invoices Created", value: "200" },
-    { label: "Naira Processed", value: "₦100k+" },
+    { label: "Active Users", value: "10+" },
+    { label: "Invoices Created", value: "50" },
+    { label: "Naira Processed", value: "₦50k+" },
     { label: "Countries", value: "1" },
   ];
 
@@ -77,7 +77,7 @@ export default function About() {
               whileInView={{ opacity: 1, x: 0 }}
             >
               <p className="text-lg text-muted-foreground mb-6">
-                Involink was born in 2024 from a simple observation: Nigerian entrepreneurs were struggling with outdated, complex invoicing tools that didn't understand their needs.
+                Involink was born in 2025 from a simple observation: Nigerian entrepreneurs were struggling with outdated, complex invoicing tools that didn't understand their needs.
               </p>
               <p className="text-lg text-muted-foreground mb-6">
                 We set out to change that. Built by Nigerians, for Nigerians, Involink combines modern technology with deep understanding of the local business landscape—from Naira currency support to integration with Nigerian payment platforms.
@@ -92,7 +92,7 @@ export default function About() {
               whileInView={{ opacity: 1, x: 0 }}
               className="p-8 rounded-2xl bg-card border border-border shadow-e2"
             >
-              <div className="grid grid-cols-2 gap-6 flex items-center justify-center">
+              <div className="grid grid-cols-2 gap-6 items-center justify-center">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 flex items-center justify-center">
                     <MapPin className="w-6 h-6 text-emerald-600" />
@@ -108,7 +108,7 @@ export default function About() {
                   </div>
                   <div>
                     <div className="font-semibold">Founded</div>
-                    <div className="text-muted-foreground">2024</div>
+                    <div className="text-muted-foreground">2025</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -117,7 +117,7 @@ export default function About() {
                   </div>
                   <div>
                     <div className="font-semibold">Team</div>
-                    <div className="text-muted-foreground">25+ Members</div>
+                    <div className="text-muted-foreground">5 Members</div>
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -126,7 +126,7 @@ export default function About() {
                   </div>
                   <div>
                     <div className="font-semibold">Presence</div>
-                    <div className="text-muted-foreground">5 Countries</div>
+                    <div className="text-muted-foreground">1 Countries</div>
                   </div>
                 </div>
               </div>
