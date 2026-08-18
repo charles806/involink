@@ -6,6 +6,7 @@ import { Clients } from "./pages/Clients";
 import { InvoiceCreation } from "./pages/InvoiceCreation";
 import { InvoiceDetail } from "./pages/InvoiceDetail";
 import { PaymentHistory } from "./pages/PaymentHistory";
+import { Wallet } from "./pages/Wallet";
 import { Settings } from "./pages/Settings";
 import { NotFound, ErrorPage } from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
@@ -84,6 +85,7 @@ export const router = createBrowserRouter([
       { path: "invoices/edit/:id", Component: InvoiceCreation },
       { path: "invoices/:id", Component: InvoiceDetail },
       { path: "payments", Component: PaymentHistory },
+      { path: "wallet", Component: Wallet },
       { path: "settings", Component: Settings },
     ],
   },

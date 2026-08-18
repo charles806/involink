@@ -371,6 +371,36 @@ class ApiService {
     return this.request(`/payments/history?${params}`, { skipSanitize: true });
   }
 
+  async getBalance() {
+    return this.request('/wallet/balance');
+  }
+
+  async initiateWithdraw(data: { amount: number; bank_name: string; account_number: string; bank_code: string; account_name?: string }) {
+    return this.request('/wallet/withdraw', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async getWithdrawals(filters: Record<string, string> = {}) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, sanitizeInput(value));
+    });
+    return this.request(`/wallet/withdrawals?${params}`, { skipSanitize: true });
+  }
+
+  async getBanks() {
+    return this.request('/wallet/banks');
+  }
+
+  async resolveAccount(account_number: string, bank_code: string) {
+    return this.request('/wallet/resolve-account', {
+      method: 'POST',
+      body: JSON.stringify({ account_number, bank_code }),
+    });
+  }
+
   logout() {
     this.setToken(null);
     localStorage.removeItem('user');

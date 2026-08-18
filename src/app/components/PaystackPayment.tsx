@@ -38,14 +38,29 @@ export function PaystackPayment({ invoiceId, amount, email, onSuccess, onClose }
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://js.paystack.co/v1/inline.js";
-    script.async = true;
-    script.onload = () => setIsInitialized(true);
-    document.body.appendChild(script);
+    let mounted = true;
+
+    loadPaystackScript()
+      .then(() => {
+        if (!mounted) return;
+        let attempts = 0;
+        const check = () => {
+          if (!mounted) return;
+          if (window.PaystackPop || attempts > 20) {
+            setIsInitialized(true);
+            return;
+          }
+          attempts++;
+          setTimeout(check, 100);
+        };
+        check();
+      })
+      .catch(() => {
+        if (mounted) toast.error("Failed to load payment system");
+      });
 
     return () => {
-      document.body.removeChild(script);
+      mounted = false;
     };
   }, []);
 
@@ -59,7 +74,7 @@ export function PaystackPayment({ invoiceId, amount, email, onSuccess, onClose }
 
     try {
       const paymentData = await api.initializePayment(invoiceId, email);
-      
+
       const paystack = new window.PaystackPop({
         key: import.meta.env.VITE_PAYSTACK_PUBLIC_KEY || "",
         email,
@@ -148,10 +163,36 @@ export function loadPaystackScript(): Promise<void> {
       return;
     }
 
+    const existing = document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]');
+    if (existing) {
+      let attempts = 0;
+      const check = () => {
+        if (window.PaystackPop || attempts > 20) {
+          resolve();
+          return;
+        }
+        attempts++;
+        setTimeout(check, 100);
+      };
+      check();
+      return;
+    }
+
     const script = document.createElement("script");
     script.src = "https://js.paystack.co/v1/inline.js";
     script.async = true;
-    script.onload = () => resolve();
+    script.onload = () => {
+      let attempts = 0;
+      const check = () => {
+        if (window.PaystackPop || attempts > 20) {
+          resolve();
+          return;
+        }
+        attempts++;
+        setTimeout(check, 100);
+      };
+      check();
+    };
     script.onerror = () => reject(new Error("Failed to load Paystack"));
     document.body.appendChild(script);
   });
