@@ -50,7 +50,7 @@ class ApiService {
     localStorage.removeItem('user');
   }
 
-  async request(endpoint: string, options: RequestInit & { skipSanitize?: boolean, timeout?: number } = {}, retries = 1) {
+  async request(endpoint: string, options: RequestInit & { skipSanitize?: boolean, timeout?: number, skipAuthRedirect?: boolean } = {}, retries = 1) {
     const url = `${API_BASE_URL}${endpoint}`;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
@@ -104,7 +104,7 @@ class ApiService {
       
       clearTimeout(timeoutId);
 
-      if (response.status === 401) {
+      if (response.status === 401 && !options.skipAuthRedirect) {
         this.clearAuth();
         window.location.href = '/login';
         throw new Error('Session expired. Please login again.');
@@ -159,6 +159,7 @@ class ApiService {
       method: 'POST',
       body: JSON.stringify({ email, password, name: sanitizedName }),
       skipSanitize: true,
+      skipAuthRedirect: true,
     });
   }
 
@@ -169,6 +170,7 @@ class ApiService {
     return this.request('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
+      skipAuthRedirect: true,
     });
   }
 
@@ -330,6 +332,35 @@ class ApiService {
     return this.request(`/payments/verify-subscription/${encodeURIComponent(reference)}`, {
       method: 'GET',
     });
+  }
+
+  async getSubscriptionStatus() {
+    return this.request('/subscriptions/status');
+  }
+
+  async cancelSubscription() {
+    return this.request('/subscriptions/cancel', {
+      method: 'POST',
+    });
+  }
+
+  async renewSubscription(interval: 'monthly' | 'yearly') {
+    return this.request('/subscriptions/renew', {
+      method: 'POST',
+      body: JSON.stringify({ interval }),
+    });
+  }
+
+  async getDashboardMetrics() {
+    return this.request('/dashboard/metrics');
+  }
+
+  async getPaymentHistory(filters: Record<string, string> = {}) {
+    const params = new URLSearchParams();
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, sanitizeInput(value));
+    });
+    return this.request(`/payments/history?${params}`, { skipSanitize: true });
   }
 
   logout() {

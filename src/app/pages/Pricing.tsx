@@ -98,13 +98,16 @@ const PricingCard = ({
 };
 
 import { useAuth } from "../context/AuthContext";
+import { useSubscription } from "../hooks/useSubscription";
 import api from "../lib/api";
 
 export default function Pricing() {
   const [isYearly, setIsYearly] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const [notice, setNotice] = useState<{ title: string; message: string } | null>(null);
   const { user, isAuthenticated } = useAuth();
+  const { isPro, refresh } = useSubscription();
   const navigate = useNavigate();
 
   const handleChoosePlan = async (planName: string) => {
@@ -118,8 +121,8 @@ export default function Pricing() {
       return;
     }
 
-    if (user.subscription_plan === 'enterprise') {
-      setNotice({ title: "You're all set", message: "You are already on the Enterprise plan!" });
+    if (user.subscription_plan === 'pro') {
+      setNotice({ title: "You're all set", message: "You are already on the Pro plan!" });
       return;
     }
 
@@ -136,27 +139,40 @@ export default function Pricing() {
       setIsLoading(false);
     }
   };
-  
+
+  const handleCancel = async () => {
+    setCancelling(true);
+    try {
+      const res = await api.cancelSubscription();
+      setNotice({ title: "Subscription cancelled", message: res.message || 'You have been reverted to the Free plan.' });
+      await refresh();
+    } catch (err: any) {
+      setNotice({ title: "Error", message: err.message || 'Failed to cancel subscription' });
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   const plans = [
     {
       name: "Free MVP",
       price: "Free",
       description: "Perfect for getting started",
       features: [
-        "5 invoices per month",
+        "10 invoices per month",
         "Basic invoice templates",
-        "Email support",
+        "Online payment links",
         "Naira currency support"
       ]
     },
     {
-      name: "Enterprise",
-      price: isYearly ? "₦27,840" : "₦2,900",
+      name: "Pro",
+      price: isYearly ? "₦95,990" : "₦9,999",
       description: "For growing businesses",
       features: [
         "Unlimited invoices",
         "Custom branding (logo & colors)",
-        "Priority WhatsApp support",
+        "Online payment links",
         "Payment link generation",
         "Client portal access",
         "Multi-user access",
@@ -263,11 +279,26 @@ export default function Pricing() {
                 key={i}
                 {...plan}
                 delay={i * 0.15}
-                isLoading={isLoading && plan.name === "Enterprise"}
+                isLoading={isLoading && plan.name === "Pro"}
                 onChoosePlan={() => handleChoosePlan(plan.name)}
               />
             ))}
           </div>
+
+          {isPro && (
+            <div className="mt-8 max-w-4xl mx-auto p-6 rounded-3xl bg-card border border-border shadow-e2 text-center">
+              <p className="text-muted-foreground mb-4">
+                You're currently on the <span className="font-semibold text-foreground">Pro</span> plan.
+              </p>
+              <button
+                onClick={handleCancel}
+                disabled={cancelling}
+                className="px-6 py-3 rounded-2xl border border-border text-sm font-medium text-muted-foreground hover:text-red-600 hover:border-red-300 disabled:opacity-60 transition-colors cursor-pointer"
+              >
+                {cancelling ? "Cancelling..." : "Cancel Subscription"}
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

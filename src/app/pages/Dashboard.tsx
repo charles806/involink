@@ -14,6 +14,7 @@ import {
 import { NavLink, useNavigate } from "react-router";
 import { toast } from "sonner";
 import api from "../lib/api";
+import { useSubscription } from "../hooks/useSubscription";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useRef } from "react";
 
@@ -196,6 +197,7 @@ export function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [invoices, setInvoices] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { isPro, subscription, remainingQuota, usedQuota, quotaLimit } = useSubscription();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -274,6 +276,72 @@ export function Dashboard() {
           </button>
         </div>
       </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid gap-4 sm:grid-cols-2"
+      >
+        <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-card p-5 shadow-e1">
+          <div className="flex items-center gap-3">
+            <div className={`grid h-11 w-11 place-items-center rounded-xl ${isPro ? "bg-amber-500/15" : "bg-emerald-600/10"}`}>
+              <span className={`text-lg font-bold ${isPro ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400"}`}>
+                {isPro ? "PRO" : "FREE"}
+              </span>
+            </div>
+            <div>
+              <p className="font-ledger text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Current Plan
+              </p>
+              <p className="text-base font-semibold tracking-tight">
+                {isPro ? "Pro" : "Free"} Plan
+              </p>
+              {subscription?.expiresAt && (
+                <p className="text-xs text-muted-foreground">
+                  Renews {new Date(subscription.expiresAt).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
+                </p>
+              )}
+            </div>
+          </div>
+          {isPro ? (
+            <NavLink
+              to="/pricing"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              Manage Plan
+            </NavLink>
+          ) : (
+            <NavLink
+              to="/pricing"
+              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-e1 transition-all hover:bg-emerald-700"
+            >
+              Upgrade to Pro
+            </NavLink>
+          )}
+        </div>
+
+        {!isPro && quotaLimit && (
+          <div className="flex flex-col justify-center gap-2 rounded-2xl border border-border bg-card p-5 shadow-e1">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">Invoice quota (this month)</span>
+              <span className="font-semibold">
+                {usedQuota ?? 0} / {quotaLimit}
+              </span>
+            </div>
+            <div className="h-2 w-full overflow-hidden rounded-full bg-emerald-600/10">
+              <div
+                className="h-full rounded-full bg-emerald-600 transition-all"
+                style={{ width: `${Math.min(100, ((usedQuota ?? 0) / quotaLimit) * 100)}%` }}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {remainingQuota !== null && remainingQuota > 0
+                ? `${remainingQuota} invoice${remainingQuota === 1 ? "" : "s"} remaining`
+                : "Limit reached — upgrade for unlimited invoices"}
+            </p>
+          </div>
+        )}
+      </motion.div>
 
       <motion.div
         className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"

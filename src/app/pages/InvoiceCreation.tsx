@@ -3,8 +3,18 @@ import { GlassCard } from "../components/GlassCard";
 import { Plus, Trash2, Calendar, Send, Save, AlertCircle, Check, Calculator } from "lucide-react";
 import { toast } from "sonner";
 import api from "../lib/api";
+import { useSubscription } from "../hooks/useSubscription";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+} from "../components/ui/alert-dialog";
 import { computeInvoiceTotals, validateLineItems, formatCurrency } from "../lib/invoiceMath";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, Link } from "react-router";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface LineItem {
@@ -44,6 +54,8 @@ export function InvoiceCreation() {
 
   const [userProfile, setUserProfile] = useState<any>(null);
   const [errors, setErrors] = useState<ValidationError[]>([]);
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const { isPro, remainingQuota, usedQuota, quotaLimit, refresh } = useSubscription();
 
   useEffect(() => {
     loadInitialData();
@@ -188,6 +200,12 @@ export function InvoiceCreation() {
   });
 
   const handleSave = async (isDraft = true) => {
+    if (!id && !isPro && remainingQuota === 0) {
+      toast.error("Monthly invoice limit reached");
+      setShowUpgrade(true);
+      return null;
+    }
+
     if (!validate()) {
       toast.error("Please fix the errors before saving");
       return null;
@@ -208,10 +226,12 @@ export function InvoiceCreation() {
       setStatus(savedInvoice.status);
       return savedInvoice;
     } catch (err: any) {
-      toast.error(err.message || "Failed to save invoice");
       if (err.message && err.message.includes("Free plan limit reached")) {
-        navigate('/pricing');
+        setShowUpgrade(true);
+        refresh();
+        return null;
       }
+      toast.error(err.message || "Failed to save invoice");
       return null;
     } finally {
       setIsLoading(false);
@@ -286,6 +306,30 @@ export function InvoiceCreation() {
         </div>
 
         <div className="p-6 space-y-6 flex-1">
+          {!id && !isPro && quotaLimit != null && (
+            <div className={`flex items-center justify-between gap-3 rounded-xl border p-4 text-sm ${
+              remainingQuota !== null && remainingQuota <= 2 && remainingQuota > 0
+                ? "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                : remainingQuota === 0
+                ? "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-400"
+                : "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+            }`}>
+              <span>
+                {remainingQuota === 0
+                  ? "Monthly invoice limit reached. Upgrade to Pro for unlimited invoices."
+                  : remainingQuota !== null && remainingQuota <= 2
+                  ? `Heads up: you have ${remainingQuota} invoice${remainingQuota === 1 ? "" : "s"} left on the Free plan.`
+                  : `${remainingQuota ?? 0} of ${quotaLimit} invoices remaining this month`}
+              </span>
+              <button
+                onClick={() => setShowUpgrade(true)}
+                className="shrink-0 rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-emerald-700"
+              >
+                Upgrade to Pro
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-muted-foreground">Invoice Number *</label>
@@ -680,6 +724,27 @@ export function InvoiceCreation() {
           </div>
         </div>
       </GlassCard>
+
+      <AlertDialog open={showUpgrade} onOpenChange={(open) => !open && setShowUpgrade(false)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Monthly limit reached</AlertDialogTitle>
+            <AlertDialogDescription>
+              You've used all {usedQuota ?? quotaLimit} free invoices this month. Upgrade to Pro for
+              unlimited invoices, custom branding, and more.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Link
+              to="/pricing"
+              className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white hover:bg-emerald-700"
+            >
+              Upgrade to Pro
+            </Link>
+            <AlertDialogAction onClick={() => setShowUpgrade(false)}>Not now</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

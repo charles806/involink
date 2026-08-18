@@ -148,7 +148,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="relative my-8">
+          {/* <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-border" />
             </div>
@@ -175,7 +175,7 @@ export default function Login() {
               </svg>
               <span className="text-sm font-medium">GitHub</span>
             </button>
-          </div>
+          </div> */}
 
           <p className="text-center mt-8 text-muted-foreground">
             Don't have an account?{" "}

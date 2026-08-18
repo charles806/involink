@@ -12,7 +12,7 @@ export default function About() {
   ];
 
   const team = [
-    { name: "Nwizu Kosisochukwu Victor", role: "CEO & Co-founder", initial: "N" },
+    { name: " Victor", role: "CEO & Co-founder", initial: "C" },
     { name: "Anene Charles", role: "CTO & Co-founder", initial: "A" },
     { name: "Sofiri Clarkson Isaiah", role: "Head of Engineering", initial: "S" },
   ];

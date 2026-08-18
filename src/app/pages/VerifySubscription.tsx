@@ -4,11 +4,13 @@ import { motion } from "framer-motion";
 import { CheckCircle2, XCircle, Loader2 } from "lucide-react";
 import api from "../lib/api";
 import { useAuth } from "../context/AuthContext";
+import { useSubscription } from "../hooks/useSubscription";
 
 export default function VerifySubscription() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { updateUser } = useAuth();
+  const { refresh: refreshSubscription } = useSubscription();
   
   const reference = searchParams.get("reference");
   
@@ -29,13 +31,14 @@ export default function VerifySubscription() {
           setStatus('success');
           // Update global user state
           updateUser({
-            subscription_plan: 'enterprise',
+            subscription_plan: 'pro',
             subscription_status: 'active'
           });
+          refreshSubscription();
           
           // Redirect to dashboard after 3 seconds
           setTimeout(() => {
-            navigate('/dashboard');
+            navigate('/app');
           }, 3000);
         } else {
           setStatus('error');
@@ -74,7 +77,7 @@ export default function VerifySubscription() {
             >
               <CheckCircle2 className="w-20 h-20 text-emerald-500 mx-auto" />
             </motion.div>
-            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Welcome to Enterprise!</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Welcome to Pro!</h2>
             <p className="text-muted-foreground">Your subscription has been successfully activated.</p>
             <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium animate-pulse">
               Redirecting to dashboard...

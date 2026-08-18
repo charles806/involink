@@ -5,6 +5,7 @@ import { Invoices } from "./pages/Invoices";
 import { Clients } from "./pages/Clients";
 import { InvoiceCreation } from "./pages/InvoiceCreation";
 import { InvoiceDetail } from "./pages/InvoiceDetail";
+import { PaymentHistory } from "./pages/PaymentHistory";
 import { Settings } from "./pages/Settings";
 import { NotFound, ErrorPage } from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
@@ -82,6 +83,7 @@ export const router = createBrowserRouter([
       { path: "invoices/new", Component: InvoiceCreation },
       { path: "invoices/edit/:id", Component: InvoiceCreation },
       { path: "invoices/:id", Component: InvoiceDetail },
+      { path: "payments", Component: PaymentHistory },
       { path: "settings", Component: Settings },
     ],
   },

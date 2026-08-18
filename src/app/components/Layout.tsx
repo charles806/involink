@@ -12,6 +12,7 @@ import {
   Plus,
   Search,
   ChevronDown,
+  Wallet,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,6 +23,7 @@ import { useAuth } from "../context/AuthContext";
 const NAV_MAIN = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/app" },
   { icon: FileText, label: "Invoices", path: "/app/invoices" },
+  { icon: Wallet, label: "Payments", path: "/app/payments" },
   { icon: Users, label: "Clients", path: "/app/clients" },
   { icon: Settings, label: "Settings", path: "/app/settings" },
 ];
