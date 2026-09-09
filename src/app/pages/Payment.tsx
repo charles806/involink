@@ -31,7 +31,6 @@ interface InvoiceData {
 
 export default function Payment() {
   const { id } = useParams();
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
   const [invoice, setInvoice] = useState<InvoiceData | null>(null);
