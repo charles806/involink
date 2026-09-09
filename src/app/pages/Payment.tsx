@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate, useParams, Navigate } from "react-router";
 import { toast } from "sonner";
-import { ArrowLeft, CreditCard, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, CreditCard, CheckCircle, XCircle, Loader2, Landmark, Copy } from "lucide-react";
 import { motion } from "framer-motion";
 import api from "../lib/api";
 import { PaystackPayment, loadPaystackScript } from "../components/PaystackPayment";
@@ -13,6 +13,9 @@ interface InvoiceData {
   clients: {
     name: string;
     email: string;
+    bank_name?: string;
+    account_number?: string;
+    account_name?: string;
   };
   subtotal: number;
   vat: number;
@@ -88,6 +91,16 @@ export default function Payment() {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const copyAccountNumber = async (value?: string) => {
+    if (!value) return;
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success("Account number copied");
+    } catch {
+      toast.error("Could not copy account number");
+    }
   };
 
   if (isLoading) {
@@ -208,6 +221,15 @@ export default function Payment() {
             </div>
           </div>
 
+          {invoice.clients?.bank_name && invoice.clients?.account_number && (
+            <BankTransferCard
+              bankName={invoice.clients.bank_name}
+              accountNumber={invoice.clients.account_number}
+              accountName={invoice.clients.account_name || invoice.clients.name}
+              onCopy={copyAccountNumber}
+            />
+          )}
+
           <div className="mb-6">
             <label className="block text-sm font-medium text-muted-foreground mb-2">
               Email Address
@@ -242,5 +264,65 @@ export default function Payment() {
         </div>
       </div>
     </div>
+  );
+}
+
+function BankTransferCard({
+  bankName,
+  accountNumber,
+  accountName,
+  onCopy,
+}: {
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  onCopy: (value?: string) => void;
+}) {
+  const detailRows = [
+    { label: "Account Name", value: accountName, mono: false },
+    { label: "Bank", value: bankName, mono: false },
+  ];
+
+  return (
+    <GlassCard className="p-5 mb-6 bg-gradient-to-br from-emerald-50/80 to-blue-50/80 dark:from-emerald-950/20 dark:to-blue-950/20">
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-500/20 rounded-lg flex items-center justify-center">
+          <Landmark className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <div>
+          <h2 className="text-base font-semibold tracking-tight text-foreground" style={{ fontFamily: "Poppins, sans-serif" }}>Pay by Bank Transfer</h2>
+          <p className="text-xs text-muted-foreground">Transfer directly to the account below</p>
+        </div>
+      </div>
+
+      <div className="space-y-2.5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-xl bg-input-background border border-border">
+          <div>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Account Number</p>
+            <p className="font-mono text-lg font-semibold tracking-wide text-foreground">{accountNumber}</p>
+          </div>
+          <button
+            onClick={() => onCopy(accountNumber)}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border bg-card text-sm font-medium text-foreground hover:bg-accent/70 transition-colors"
+          >
+            <Copy className="w-3.5 h-3.5" />
+            Copy
+          </button>
+        </div>
+
+        {detailRows.map((row) => (
+          <div key={row.label} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-4 rounded-xl bg-input-background border border-border">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{row.label}</p>
+            <p className={`font-medium text-foreground ${row.mono ? "font-mono tracking-wide" : ""}`}>{row.value}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />
+        <span>or pay online</span>
+        <span className="h-px flex-1 bg-border" />
+      </div>
+    </GlassCard>
   );
 }

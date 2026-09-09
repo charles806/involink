@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { GlassCard } from "../components/GlassCard";
-import { Search, Plus, UserCircle, MoreHorizontal, Loader2, X, Mail, Phone, MapPin, Building2, Edit, Trash2 } from "lucide-react";
+import { Search, Plus, UserCircle, MoreHorizontal, Loader2, X, Mail, Phone, MapPin, Building2, Landmark, Edit, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import api from "../lib/api";
 import { motion, AnimatePresence, useInView } from "framer-motion";
@@ -10,7 +10,10 @@ const ClientModal = ({ isOpen, onClose, client, onSave }: { isOpen: boolean; onC
     name: "",
     email: "",
     phone: "",
-    address: ""
+    address: "",
+    bankName: "",
+    accountNumber: "",
+    accountName: ""
   });
 
   useEffect(() => {
@@ -19,10 +22,13 @@ const ClientModal = ({ isOpen, onClose, client, onSave }: { isOpen: boolean; onC
         name: client.name || "",
         email: client.email || "",
         phone: client.phone || "",
-        address: client.address || ""
+        address: client.address || "",
+        bankName: client.bank_name || "",
+        accountNumber: client.account_number || "",
+        accountName: client.account_name || ""
       });
     } else {
-      setFormData({ name: "", email: "", phone: "", address: "" });
+      setFormData({ name: "", email: "", phone: "", address: "", bankName: "", accountNumber: "", accountName: "" });
     }
   }, [client]);
 
@@ -78,7 +84,7 @@ const ClientModal = ({ isOpen, onClose, client, onSave }: { isOpen: boolean; onC
 
           <div>
             <label className="block text-sm font-medium text-muted-foreground mb-1">
-              Email
+              Email <span className="text-muted-foreground/60">(optional)</span>
             </label>
             <input
               type="email"
@@ -86,6 +92,7 @@ const ClientModal = ({ isOpen, onClose, client, onSave }: { isOpen: boolean; onC
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full px-4 py-3 rounded-xl border border-border bg-input-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
               placeholder="client@example.com"
+              required={false}
             />
           </div>
 
@@ -113,6 +120,49 @@ const ClientModal = ({ isOpen, onClose, client, onSave }: { isOpen: boolean; onC
               className="w-full px-4 py-3 rounded-xl border border-border bg-input-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500 resize-none"
               placeholder="Client address"
             />
+          </div>
+
+          <div className="pt-3 border-t border-border">
+            <div className="flex items-center gap-2 mb-1">
+              <Landmark className="w-4 h-4 text-muted-foreground" />
+              <label className="block text-sm font-medium text-muted-foreground">
+                Bank Details <span className="text-muted-foreground/60">(optional)</span>
+              </label>
+            </div>
+            <p className="text-xs text-muted-foreground mb-4 ml-6">
+              Shared with this client on payment pages so they can pay you directly.
+            </p>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <input
+                  type="text"
+                  value={formData.bankName}
+                  onChange={(e) => setFormData({ ...formData, bankName: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-input-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                  placeholder="Bank name e.g. Guarantee Trust Bank"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={formData.accountNumber}
+                  onChange={(e) => setFormData({ ...formData, accountNumber: e.target.value.replace(/\D/g, "") })}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-input-background text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                  placeholder="Account number"
+                />
+              </div>
+              <div>
+                <input
+                  type="text"
+                  value={formData.accountName}
+                  onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-input-background text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+                  placeholder="Account name"
+                />
+              </div>
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4">
@@ -234,11 +284,21 @@ export function Clients() {
   const handleSaveClient = async (data: any) => {
     setSaving(true);
     try {
+      const payload = {
+        ...data,
+        bank_name: data.bankName || null,
+        account_number: data.accountNumber || null,
+        account_name: data.accountName || null,
+      };
+      delete payload.bankName;
+      delete payload.accountNumber;
+      delete payload.accountName;
+
       if (editingClient) {
-        await api.updateClient(editingClient.id, data);
+        await api.updateClient(editingClient.id, payload);
         toast.success("Client updated!");
       } else {
-        await api.createClient(data);
+        await api.createClient(payload);
         toast.success("Client added!");
       }
       setModalOpen(false);

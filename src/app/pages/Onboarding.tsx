@@ -17,6 +17,8 @@ import api from "../lib/api";
 
 type OnboardingData = {
   businessType: string;
+  workflow: string;
+  industry: string;
   businessAddress: string;
   defaultCurrency: string;
   brandColor: string;
@@ -32,6 +34,8 @@ type OnboardingData = {
 
 const initialData: OnboardingData = {
   businessType: "",
+  workflow: "",
+  industry: "",
   businessAddress: "",
   defaultCurrency: "NGN",
   brandColor: "#10b981", // default emerald-500
@@ -166,7 +170,41 @@ export default function Onboarding() {
 
 /* --- Step 1: Business Operations --- */
 function Step1Business({ data, updateData, onNext }: any) {
-  const isValid = data.businessType && data.businessAddress && data.defaultCurrency;
+  const isValid = data.businessType && data.businessAddress;
+
+  const businessTypeOptions = [
+    { value: "freelancer", label: "Freelancer / Sole Trader" },
+    { value: "agency", label: "Agency / Studio" },
+    { value: "llc", label: "LLC / Corporation" },
+    { value: "enterprise", label: "Enterprise" },
+    { value: "consultancy", label: "Consultancy" },
+    { value: "nonprofit", label: "Non-Profit / NGO" },
+    { value: "educational", label: "Educational / Tutoring" },
+    { value: "logistics", label: "Logistics / Delivery" },
+    { value: "manufacturing", label: "Manufacturing" },
+    { value: "retail", label: "Retail / Commerce" },
+  ];
+
+  const workflowOptions = [
+    { value: "email", label: "Email a payment link", desc: "Fastest way to get paid online" },
+    { value: "chat", label: "Share a link on WhatsApp / chat", desc: "Send and follow up in your chats" },
+    { value: "pdf", label: "Attach a PDF invoice", desc: "Email a PDF and collect payment manually" },
+    { value: "pos", label: "Collect in-person (POS / cash)", desc: "Use at the point of sale" },
+  ];
+
+  const industryOptions = [
+    { value: "tech", label: "Tech / IT" },
+    { value: "consulting", label: "Consulting" },
+    { value: "creative", label: "Creative / Design" },
+    { value: "construction", label: "Construction" },
+    { value: "retail", label: "Retail / Logistics" },
+    { value: "healthcare", label: "Healthcare" },
+    { value: "education", label: "Education" },
+    { value: "real-estate", label: "Real Estate" },
+    { value: "media", label: "Media / Marketing" },
+    { value: "food", label: "Food / Hospitality" },
+    { value: "other", label: "Other" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -188,10 +226,9 @@ function Step1Business({ data, updateData, onNext }: any) {
               className="w-full appearance-none pl-10 pr-4 py-3 rounded-xl bg-input-background border border-border text-foreground focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
             >
               <option value="" disabled>Select category...</option>
-              <option value="freelancer">Freelancer / Sole Trader</option>
-              <option value="agency">Agency / Studio</option>
-              <option value="llc">LLC / Corporation</option>
-              <option value="enterprise">Enterprise</option>
+              {businessTypeOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
             <Briefcase className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           </div>
@@ -209,17 +246,64 @@ function Step1Business({ data, updateData, onNext }: any) {
         </div>
 
         <div>
-           <label className="block text-sm font-medium mb-1.5 text-muted-foreground">Default Currency</label>
-           <select 
-             value={data.defaultCurrency} 
-             onChange={e => updateData({ defaultCurrency: e.target.value })}
-             className="w-full p-3 rounded-xl bg-input-background border border-border text-foreground focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
-           >
-             <option value="NGN">Nigerian Naira (₦)</option>
-             <option value="USD">US Dollar ($)</option>
-             <option value="EUR">Euro (€)</option>
-             <option value="GBP">British Pound (£)</option>
-           </select>
+          <label className="block text-sm font-medium mb-2 text-muted-foreground">How do you usually get paid?</label>
+          <div className="grid grid-cols-1 gap-2">
+            {workflowOptions.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => updateData({ workflow: opt.value })}
+                className={`group w-full text-left px-4 py-3 rounded-xl border transition-all flex items-center justify-between gap-3 ${
+                  data.workflow === opt.value
+                    ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10 ring-2 ring-emerald-500/30 shadow-e1"
+                    : "border-border bg-input-background hover:border-emerald-500/50"
+                }`}
+              >
+                <span>
+                  <span className="block text-sm font-medium text-foreground">{opt.label}</span>
+                  <span className="block text-xs text-muted-foreground mt-0.5">{opt.desc}</span>
+                </span>
+                <span
+                  className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 transition-all ${
+                    data.workflow === opt.value
+                      ? "border-emerald-500 bg-emerald-500"
+                      : "border-border group-hover:border-emerald-500/50"
+                  }`}
+                >
+                  {data.workflow === opt.value && (
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2 text-muted-foreground">What industry are you in?</label>
+          <select 
+            value={data.industry} 
+            onChange={e => updateData({ industry: e.target.value })}
+            className="w-full appearance-none pl-4 pr-4 py-3 rounded-xl bg-input-background border border-border text-foreground focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500"
+          >
+            <option value="" disabled>Select industry...</option>
+            {industryOptions.map(opt => (
+              <option key={opt.value} value={opt.value}>{opt.label}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1.5 text-muted-foreground">Default Currency</label>
+          <div className="relative">
+            <input 
+              type="text"
+              value="Nigerian Naira (₦)"
+              disabled
+              className="w-full px-4 py-3 rounded-xl bg-accent/50 border border-border text-foreground cursor-not-allowed"
+            />
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-xs font-medium text-emerald-600 dark:text-emerald-400">NGN only</span>
+          </div>
         </div>
       </div>
 
