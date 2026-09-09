@@ -26,6 +26,10 @@ import Cookies from "./pages/Cookies";
 import Onboarding from "./pages/Onboarding";
 import Payment from "./pages/Payment";
 import VerifySubscription from "./pages/VerifySubscription";
+import { AdminLayout } from "./admin/AdminLayout";
+import { AdminDashboard } from "./admin/pages/AdminDashboard";
+import { AdminMarketers } from "./admin/pages/AdminMarketers";
+import { AdminUsers } from "./admin/pages/AdminUsers";
 import { useAuth } from "./context/AuthContext";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -47,11 +51,41 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function RequireAdmin({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isAdmin, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/app" replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function AppLayout() {
   return (
     <ProtectedRoute>
       <Layout />
     </ProtectedRoute>
+  );
+}
+
+function AdminAppLayout() {
+  return (
+    <RequireAdmin>
+      <AdminLayout />
+    </RequireAdmin>
   );
 }
 
@@ -87,6 +121,15 @@ export const router = createBrowserRouter([
       { path: "payments", Component: PaymentHistory },
       { path: "wallet", Component: Wallet },
       { path: "settings", Component: Settings },
+    ],
+  },
+  {
+    path: "/admin",
+    Component: AdminAppLayout,
+    children: [
+      { index: true, Component: AdminDashboard },
+      { path: "marketers", Component: AdminMarketers },
+      { path: "users", Component: AdminUsers },
     ],
   },
   { path: "*", Component: NotFound },

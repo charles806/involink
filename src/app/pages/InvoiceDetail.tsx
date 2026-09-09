@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { GlassCard } from "../components/GlassCard";
 import { StatusBadge } from "../components/StatusBadge";
-import { Download, Send, CheckCircle, ArrowLeft, ExternalLink, Clock, AlertTriangle, CreditCard, History, BellRing, Loader2, CheckCircle2 } from "lucide-react";
+import { Download, Send, CheckCircle, ArrowLeft, ExternalLink, Clock, AlertTriangle, Landmark, History, BellRing, Loader2, CheckCircle2 } from "lucide-react";
 import { NavLink, useParams } from "react-router";
 import { toast } from "sonner";
 import api from "../lib/api";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -24,6 +25,7 @@ interface PaymentRecord {
 
 export function InvoiceDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
   const [invoice, setInvoice] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -36,6 +38,7 @@ export function InvoiceDetail() {
   const [reminderTone, setReminderTone] = useState<"friendly" | "firm">("friendly");
   const [isSending, setIsSending] = useState(false);
   const [sentSummary, setSentSummary] = useState<any>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     loadInvoice();
@@ -75,6 +78,17 @@ export function InvoiceDetail() {
       toast.error(err.message || "Failed to send invoice");
     } finally {
       setIsSending(false);
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsDownloading(true);
+    try {
+      await api.downloadInvoicePdf(id!);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to download PDF");
+    } finally {
+      setIsDownloading(false);
     }
   };
 
@@ -219,10 +233,12 @@ export function InvoiceDetail() {
         
         <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto mt-4 sm:mt-0">
           <button
-            onClick={() => window.print()}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-card hover:bg-accent text-foreground border border-border rounded-xl font-medium transition-colors text-sm"
+            onClick={handleDownloadPdf}
+            disabled={isDownloading}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-card hover:bg-accent text-foreground border border-border rounded-xl font-medium transition-colors text-sm disabled:opacity-60"
           >
-            <Download className="w-4 h-4" /> Print
+            {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            {isDownloading ? "Preparing..." : "Download PDF"}
           </button>
           
           {invoice.status !== "paid" && invoice.status !== "draft" && (
@@ -262,7 +278,7 @@ export function InvoiceDetail() {
                   className="pointer-events-none absolute inset-0 rounded-xl bg-emerald-400/30 blur-md animate-pulse"
                 />
                 <span className="relative flex items-center gap-2">
-                  <CreditCard className="w-4 h-4" /> Pay Now
+                  <Landmark className="w-4 h-4" /> Account Details
                 </span>
               </NavLink>
               <button
@@ -515,13 +531,35 @@ export function InvoiceDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         <div className="lg:col-span-2 space-y-6">
-          <motion.div {...fadeUp} className="paper relative overflow-hidden rounded-xl shadow-e2">
-            <span
-              aria-hidden
-              className="pointer-events-none absolute -right-6 -top-12 select-none font-display text-[170px] font-bold leading-none text-emerald-600/5"
-            >
-              ₦
-            </span>
+          <motion.div {...fadeUp} className="paper relative overflow-hidden rounded-2xl shadow-e3 border border-paper-line">
+            {/* Branded header band */}
+            <div className="relative bg-gradient-to-r from-emerald-600 to-emerald-500 px-6 sm:px-8 py-5 text-white">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <span
+                    aria-hidden
+                    className="grid h-10 w-10 place-items-center rounded-xl bg-white/15 backdrop-blur font-display text-lg font-bold"
+                  >
+                    {(user?.business_name || user?.name)?.[0]?.toUpperCase() || "I"}
+                  </span>
+                  <div>
+                    <p className="font-display text-lg font-semibold leading-tight">
+                      {user?.business_name || "INVOICE"}
+                    </p>
+                    {user?.business_address && (
+                      <p className="text-xs text-white/80">{user.business_address}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="font-ledger text-[10px] uppercase tracking-[0.25em] text-white/70">Invoice</p>
+                  <p className="font-ledger text-lg font-bold tracking-wide">{invoice.invoice_number}</p>
+                  <p className="text-xs text-white/80 mt-0.5">
+                    Date: {formatDate(invoice.issue_date || invoice.created_at)}
+                  </p>
+                </div>
+              </div>
+            </div>
 
             {invoice.status === "paid" && (
               <motion.div
@@ -531,9 +569,9 @@ export function InvoiceDetail() {
                 className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 select-none"
                 aria-hidden
               >
-                <div className="rounded-lg border-4 border-emerald-500/70 px-6 py-2 text-center">
+                <div className="rounded-lg border-4 border-emerald-500/70 bg-emerald-50/60 px-6 py-2 text-center">
                   <div className="rounded-[4px] border-2 border-emerald-500/70 px-3 py-1">
-                    <span className="font-display text-2xl font-bold uppercase tracking-[0.22em] text-emerald-500/80 sm:text-4xl">
+                    <span className="font-display text-2xl font-bold uppercase tracking-[0.22em] text-emerald-500 sm:text-4xl">
                       Paid
                     </span>
                   </div>
@@ -542,7 +580,7 @@ export function InvoiceDetail() {
             )}
 
             <div className="relative p-6 sm:p-8">
-              <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-8 pb-8 border-b border-paper-line">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 mb-8 pb-8 border-b border-paper-line">
                 <div>
                   <h3 className="font-ledger text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-2">Bill To</h3>
                   <p className="font-semibold text-foreground text-lg">{invoice.clients?.name}</p>
@@ -550,16 +588,22 @@ export function InvoiceDetail() {
                   {invoice.clients?.phone && <p className="text-muted-foreground mt-1 text-sm">{invoice.clients?.phone}</p>}
                   {invoice.clients?.address && <p className="text-muted-foreground mt-1 text-sm max-w-[280px]">{invoice.clients?.address}</p>}
                 </div>
-                <div className="text-right text-sm">
-                  <div className="mb-3">
-                    <h3 className="font-ledger text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Issue Date</h3>
-                    <p className="font-medium text-foreground">{formatDate(invoice.issue_date || invoice.created_at)}</p>
-                  </div>
-                  <div>
-                    <h3 className="font-ledger text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Due Date</h3>
-                    <p className={`font-medium ${isOverdue ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
-                      {formatDate(invoice.due_date)}
-                    </p>
+                <div className="sm:justify-self-end sm:text-right">
+                  <div className="grid grid-cols-2 gap-x-10 gap-y-3 sm:grid-cols-1 sm:gap-y-3 sm:text-right">
+                    <div>
+                      <h3 className="font-ledger text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Issue Date</h3>
+                      <p className="font-medium text-foreground">{formatDate(invoice.issue_date || invoice.created_at)}</p>
+                    </div>
+                    <div>
+                      <h3 className="font-ledger text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Due Date</h3>
+                      <p className={`font-medium ${isOverdue ? "text-red-600 dark:text-red-400" : "text-foreground"}`}>
+                        {formatDate(invoice.due_date)}
+                      </p>
+                    </div>
+                    <div className="sm:mt-4">
+                      <h3 className="font-ledger text-[10px] uppercase tracking-[0.2em] text-muted-foreground mb-1">Status</h3>
+                      <StatusBadge status={invoice.status} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -567,7 +611,7 @@ export function InvoiceDetail() {
               <div className="overflow-x-auto mb-8">
                 <table className="w-full text-left">
                   <thead>
-                    <tr className="text-muted-foreground font-ledger text-[10px] uppercase tracking-[0.18em] border-b border-paper-line">
+                    <tr className="text-muted-foreground font-ledger text-[10px] uppercase tracking-[0.18em] border-b-2 border-foreground/10">
                       <th className="py-3 font-medium">Description</th>
                       <th className="py-3 font-medium text-center">Qty</th>
                       <th className="py-3 font-medium text-right">Rate</th>
@@ -580,7 +624,7 @@ export function InvoiceDetail() {
                       const lineTotal = item.quantity * item.rate;
                       const afterDiscount = lineTotal - (lineTotal * ((item.discount || 0) / 100));
                       return (
-                        <tr key={item.id} className="text-foreground">
+                        <tr key={item.id} className="text-foreground transition-colors hover:bg-black/[0.02] dark:hover:bg-white/[0.02]">
                           <td className="py-4 font-medium">
                             {item.description}
                             {item.unit && <span className="text-muted-foreground font-ledger text-xs ml-1">({item.unit})</span>}
@@ -598,28 +642,29 @@ export function InvoiceDetail() {
                 </table>
               </div>
 
-              <div className="flex flex-col items-end gap-3 pt-6 border-t border-paper-line">
-                <div className="flex justify-between w-full sm:w-64 text-sm">
-                  <span className="text-muted-foreground">Subtotal</span>
-                  <span className="font-ledger font-medium text-foreground">{formatCurrency(invoice.subtotal)}</span>
-                </div>
-                {invoice.vat_enabled && invoice.vat > 0 && (
-                  <div className="flex justify-between w-full sm:w-64 text-sm">
-                    <span className="text-muted-foreground">VAT</span>
-                    <span className="font-ledger font-medium text-foreground">{formatCurrency(invoice.vat)}</span>
+              <div className="flex justify-end">
+                <div className="w-full sm:w-64 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Subtotal</span>
+                    <span className="font-ledger font-medium text-foreground">{formatCurrency(invoice.subtotal)}</span>
                   </div>
-                )}
-                <div className="flex justify-between w-full sm:w-64 text-xl font-bold mt-2 pt-4 border-t-2 border-foreground text-emerald-700 dark:text-emerald-400">
-                  <span>Total Due</span>
-                  <span className="font-ledger tracking-tight">{formatCurrency(invoice.total)}</span>
-                </div>
-                
-                {invoice.status === "paid" && (
-                  <div className="flex justify-between w-full sm:w-64 text-sm text-emerald-700 dark:text-emerald-400">
-                    <span>Amount Paid</span>
-                    <span className="font-ledger font-medium">{formatCurrency(invoice.total)}</span>
+                  {invoice.vat_enabled && invoice.vat > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">VAT</span>
+                      <span className="font-ledger font-medium text-foreground">{formatCurrency(invoice.vat)}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between rounded-xl bg-emerald-50 px-3 py-2.5 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-500/25">
+                    <span className="text-sm font-semibold">Total Due</span>
+                    <span className="font-ledger text-lg font-bold tracking-tight">{formatCurrency(invoice.total)}</span>
                   </div>
-                )}
+                  {invoice.status === "paid" && (
+                    <div className="flex justify-between text-sm text-emerald-700 dark:text-emerald-400">
+                      <span>Amount Paid</span>
+                      <span className="font-ledger font-medium">{formatCurrency(invoice.total)}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </motion.div>
@@ -645,7 +690,7 @@ export function InvoiceDetail() {
                 <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-emerald-600 transition-colors shrink-0" />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground mt-3 text-center">Share this link with your client to accept card payments.</p>
+            <p className="text-xs text-muted-foreground mt-3 text-center">Share this link with your client to see the invoice and your bank details.</p>
             </GlassCard>
           </motion.div>
 

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from "react";
 import api from "../lib/api";
 
 interface User {
@@ -6,6 +6,8 @@ interface User {
   email: string;
   name: string;
   business_name?: string;
+  business_address?: string;
+  role?: 'user' | 'admin';
   bank_name?: string;
   account_number?: string;
   account_name?: string;
@@ -18,6 +20,7 @@ interface User {
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
+  isAdmin: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, name: string) => Promise<void>;
@@ -78,8 +81,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const isAdmin = useMemo(() => user?.role === 'admin', [user]);
+
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, signup, updateUser, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated: !!user, isAdmin, isLoading, login, signup, updateUser, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -14,6 +14,7 @@ import {
   ChevronDown,
   Banknote,
   Receipt,
+  ShieldCheck,
 } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -59,7 +60,7 @@ export function Layout() {
   const [isDark, setIsDark] = useDarkMode();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -147,6 +148,22 @@ export function Layout() {
                 )}
               </NavLink>
             ))}
+            {isAdmin && (
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  cn(
+                    "group relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                    isActive
+                      ? "bg-emerald-600/10 text-emerald-700 dark:text-emerald-400"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  )
+                }
+              >
+                <ShieldCheck className="h-[18px] w-[18px]" />
+                Admin
+              </NavLink>
+            )}
           </nav>
         </div>
 
@@ -315,6 +332,16 @@ export function Layout() {
                       <Settings className="h-4 w-4" />
                       Settings
                     </NavLink>
+                    {isAdmin && (
+                      <NavLink
+                        to="/admin"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                      >
+                        <ShieldCheck className="h-4 w-4" />
+                        Admin Panel
+                      </NavLink>
+                    )}
                     <button
                       onClick={handleLogout}
                       className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-600 transition-colors hover:bg-red-500/10"

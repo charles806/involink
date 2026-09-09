@@ -266,6 +266,55 @@ class ApiService {
   async getInvoice(id: string) {
     return this.request(`/invoices/${encodeURIComponent(id)}`);
   }
+
+  async downloadInvoicePdf(id: string) {
+    const token = this.getToken();
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/invoices/${encodeURIComponent(id)}/pdf`, {
+        headers,
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        let errorMessage = 'Failed to download PDF';
+        try {
+          const errorBody = await response.json();
+          errorMessage = errorBody.error || errorMessage;
+        } catch (e) {
+          // not JSON
+        }
+        throw new Error(errorMessage);
+      }
+
+      const blob = await response.blob();
+      const disposition = response.headers.get('Content-Disposition') || '';
+      const match = disposition.match(/filename="?([^";]+)"?/);
+      const filename = match?.[1] || `invoice-${id}.pdf`;
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      return { filename };
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out. Please check your connection.');
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeoutId);
+    }
+  }
   
   async getPublicInvoice(id: string) {
     return this.request(`/invoices/${encodeURIComponent(id)}/public`, {
@@ -398,6 +447,50 @@ class ApiService {
     return this.request('/wallet/resolve-account', {
       method: 'POST',
       body: JSON.stringify({ account_number, bank_code }),
+    });
+  }
+
+  // ---- Admin ----
+  async getAdminOverview() {
+    return this.request('/admin/overview');
+  }
+
+  async getMarketers() {
+    return this.request('/admin/marketers');
+  }
+
+  async createMarketer(data: { name: string; email: string; phone?: string; status?: string }) {
+    return this.request('/admin/marketers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateMarketer(id: string, data: Record<string, unknown>) {
+    return this.request(`/admin/marketers/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteMarketer(id: string) {
+    return this.request(`/admin/marketers/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async getAdminUsers(params?: { search?: string; marketer_id?: string }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.set('search', params.search);
+    if (params?.marketer_id) query.set('marketer_id', params.marketer_id);
+    const qs = query.toString();
+    return this.request(`/admin/users${qs ? `?${qs}` : ''}`);
+  }
+
+  async updateAdminUser(id: string, data: Record<string, unknown>) {
+    return this.request(`/admin/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
     });
   }
 
